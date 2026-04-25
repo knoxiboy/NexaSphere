@@ -209,6 +209,7 @@ function RolesGuideModal({ onClose }) {
 
 const WHATSAPP_SCREENING = 'https://chat.whatsapp.com/EFbDGo6awGP2L0laESg3lq';
 const WHATSAPP_COMMUNITY = 'https://chat.whatsapp.com/FhpJEaod2g419jFMfqrhGZ';
+const LINKEDIN_PAGE      = 'https://www.linkedin.com/showcase/glbajaj-nexasphere/';
 
 const ROLE_OPTIONS = [
   'Technical Lead',
@@ -1022,7 +1023,7 @@ export default function RecruitmentPage({ onBack }) {
     document.querySelectorAll('#pg-apply .pop-flip, #pg-apply .pop-in, #pg-apply .pop-word, #pg-apply .pop-scale')
       .forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [step]);
 
   return (
     <div id="pg-apply" ref={topRef}>
