@@ -44,7 +44,7 @@ function requestLogger(req, res, next) {
 
 app.use(requestLogger);
 
-const sessions = new Map();
+const adminAuth = adminAuthMiddleware.requireAdmin;
 const adminEvents = new EventEmitter();
 adminEvents.on('CORE_TEAM_MEMBER_ADDED', (event) => console.log(`[EVENT] CORE_TEAM_MEMBER_ADDED:`, event));
 adminEvents.on('CORE_TEAM_MEMBER_REMOVED', (event) => console.log(`[EVENT] CORE_TEAM_MEMBER_REMOVED:`, event));
@@ -124,26 +124,8 @@ async function supabaseRequest(pathname, { method = 'GET', body } = {}) {
   return text ? JSON.parse(text) : [];
 }
 
-function parseBearer(authHeader = '') {
-  if (!authHeader.startsWith('Bearer ')) return '';
-  return authHeader.slice(7).trim();
-}
-
-function adminAuth(req, res, next) {
-  const bearer = parseBearer(req.headers.authorization || '');
-  if (!bearer || !sessions.has(bearer)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  req.adminSession = sessions.get(bearer);
-  return next();
-}
-
 function toSafeString(value, max = 4000) {
   return String(value ?? '').trim().slice(0, max);
-}
-
-function sanitizeHtml(str) {
-  return String(str || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
 }
 
 function validateWhatsApp(str) {
@@ -201,7 +183,7 @@ async function canManageActivityEvent({ name, email, phone, password }) {
 async function listEventsStore() {
   if (HAS_SUPABASE) {
     const rows = await supabaseRequest('events?select=*&order=created_at.desc');
-    return rows.map(r => ({
+    return rows.map(r => sanitizeEventRecord({
       id: r.id,
       name: r.name,
       shortName: r.short_name || r.shortName || r.name,
@@ -215,7 +197,7 @@ async function listEventsStore() {
     }));
   }
   const content = await readContent();
-  return content.events || [];
+  return (content.events || []).map((event) => sanitizeEventRecord(event));
 }
 
 async function createEventStore(event) {
@@ -238,7 +220,7 @@ async function createEventStore(event) {
       payload = { ...payload, id: `${event.id}-${Date.now()}` };
       [row] = await supabaseRequest('events', { method: 'POST', body: [payload] });
     }
-    return {
+    return sanitizeEventRecord({
       id: row.id,
       name: row.name,
       shortName: row.short_name || row.name,
@@ -249,12 +231,12 @@ async function createEventStore(event) {
       tags: Array.isArray(row.tags) ? row.tags : [],
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-    };
+    });
   }
   const content = await readContent();
   content.events.unshift({ ...event, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
   await writeContent(content);
-  return content.events[0];
+  return sanitizeEventRecord(content.events[0]);
 }
 
 async function updateEventStore(id, patch) {
@@ -273,7 +255,7 @@ async function updateEventStore(id, patch) {
       },
     });
     if (!row) return null;
-    return {
+    return sanitizeEventRecord({
       id: row.id,
       name: row.name,
       shortName: row.short_name || row.name,
@@ -284,14 +266,14 @@ async function updateEventStore(id, patch) {
       tags: Array.isArray(row.tags) ? row.tags : [],
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-    };
+    });
   }
   const content = await readContent();
   const idx = content.events.findIndex(e => e.id === id);
   if (idx < 0) return null;
   content.events[idx] = { ...content.events[idx], ...patch, id, updatedAt: new Date().toISOString() };
   await writeContent(content);
-  return content.events[idx];
+  return sanitizeEventRecord(content.events[idx]);
 }
 
 async function deleteEventStore(id) {
@@ -310,7 +292,7 @@ async function deleteEventStore(id) {
 async function listActivityEventsStore(activityKey) {
   if (HAS_SUPABASE) {
     const rows = await supabaseRequest(`activity_events?activity_key=eq.${encodeURIComponent(activityKey)}&select=*&order=created_at.desc`);
-    return rows.map(r => ({
+    return rows.map(r => sanitizeActivityEventRecord({
       id: r.id,
       name: r.name,
       date: r.date_text || r.date,
@@ -321,7 +303,7 @@ async function listActivityEventsStore(activityKey) {
     }));
   }
   const content = await readContent();
-  return content.activityEvents?.[activityKey] || [];
+  return (content.activityEvents?.[activityKey] || []).map((event) => sanitizeActivityEventRecord(event));
 }
 
 async function createActivityEventStore(activityKey, event) {
@@ -341,7 +323,7 @@ async function createActivityEventStore(activityKey, event) {
         created_by_phone: event.createdBy?.phone || '',
       }],
     });
-    return {
+    return sanitizeActivityEventRecord({
       id: row.id,
       name: row.name,
       date: row.date_text,
@@ -349,14 +331,14 @@ async function createActivityEventStore(activityKey, event) {
       description: row.description,
       status: row.status || 'completed',
       createdAt: row.created_at,
-    };
+    });
   }
   const content = await readContent();
   content.activityEvents = content.activityEvents || {};
   content.activityEvents[activityKey] = content.activityEvents[activityKey] || [];
   content.activityEvents[activityKey].unshift(event);
   await writeContent(content);
-  return event;
+  return sanitizeActivityEventRecord(event);
 }
 
 async function deleteActivityEventStore(activityKey, eventId) {
@@ -377,7 +359,7 @@ async function deleteActivityEventStore(activityKey, eventId) {
 async function listCoreTeamStore() {
   if (HAS_SUPABASE) {
     const rows = await supabaseRequest('core_team_members?select=*&order=created_at.asc');
-    return rows.map(r => ({
+    return rows.map(r => sanitizeCoreTeamMemberRecord({
       id: r.id, name: r.name, role: r.role, year: r.year,
       branch: r.branch, section: r.section, email: r.email,
       whatsapp: r.whatsapp, linkedin: r.linkedin, instagram: r.instagram,
@@ -385,7 +367,7 @@ async function listCoreTeamStore() {
     }));
   }
   const content = await readContent();
-  return content.coreTeam || [];
+  return (content.coreTeam || []).map((member) => sanitizeCoreTeamMemberRecord(member));
 }
 
 async function createCoreTeamStore(member) {
@@ -399,19 +381,19 @@ async function createCoreTeamStore(member) {
         instagram: member.instagram, photo_url: member.photoUrl
       }]
     });
-    return {
+    return sanitizeCoreTeamMemberRecord({
       id: row.id, name: row.name, role: row.role, year: row.year,
       branch: row.branch, section: row.section, email: row.email,
       whatsapp: row.whatsapp, linkedin: row.linkedin, instagram: row.instagram,
       photoUrl: row.photo_url, createdAt: row.created_at
-    };
+    });
   }
   const content = await readContent();
   content.coreTeam = content.coreTeam || [];
   const newMember = { ...member, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
   content.coreTeam.push(newMember);
   await writeContent(content);
-  return newMember;
+  return sanitizeCoreTeamMemberRecord(newMember);
 }
 
 async function deleteCoreTeamStore(id) {
@@ -570,17 +552,8 @@ app.delete('/api/content/activity-events/:activityKey/:eventId', async (req, res
   }
 });
 
-app.post('/api/admin/login', (req, res) => {
-  const username = process.env.ADMIN_USERNAME || 'admin';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
-  const u = String(req.body?.username || '').trim();
-  const p = String(req.body?.password || '');
-
-  if (u !== username || p !== password) return res.status(401).json({ error: 'Invalid credentials' });
-  const token = crypto.randomBytes(24).toString('hex');
-  sessions.set(token, { username: u, createdAt: Date.now() });
-  return res.json({ token, username: u });
-});
+app.post('/api/admin/login', adminAuthMiddleware.login);
+app.post('/api/admin/logout', adminAuthMiddleware.logout);
 
 app.get('/api/admin/events', adminAuth, async (req, res) => {
   return res.json({ events: await listEventsStore() });
@@ -644,10 +617,10 @@ app.post('/api/admin/core-team', adminAuth, async (req, res) => {
     const adminEmail = req.adminSession?.username || 'admin';
     
     const member = {
-      name: sanitizeHtml(toSafeString(body.name, 100)),
-      role: sanitizeHtml(toSafeString(body.role, 100)),
-      year: sanitizeHtml(toSafeString(body.year, 20)),
-      branch: sanitizeHtml(toSafeString(body.branch, 100)),
+      name: toSafeString(body.name, 100),
+      role: toSafeString(body.role, 100),
+      year: toSafeString(body.year, 20),
+      branch: toSafeString(body.branch, 100),
       section: validateSection(body.section),
       email: toSafeString(body.email, 140),
       whatsapp: validateWhatsApp(body.whatsapp),
@@ -690,14 +663,11 @@ app.delete('/api/admin/core-team/:id', adminAuth, async (req, res) => {
 
 async function handleForm(formType, req, res) {
   try {
-    const body = req.body || {};
-    if (!toSafeString(body.fullName, 120)) return res.status(400).json({ error: 'fullName is required' });
-    if (!isEmail(body.collegeEmail)) return res.status(400).json({ error: 'Invalid email address' });
-    if (!isPhoneish(body.whatsapp)) return res.status(400).json({ error: 'Invalid contact number' });
+    const payload = normalizeFormSubmission(formType, req.body || {});
 
-    const savedToSupabase = await appendToSupabaseForms(formType, body);
+    const savedToSupabase = await appendToSupabaseForms(formType, payload);
     try {
-      await appendFormToSheet(formType, body);
+      await appendFormToSheet(formType, payload);
     } catch (sheetErr) {
       if (!savedToSupabase) throw sheetErr;
     }
@@ -713,6 +683,15 @@ async function handleForm(formType, req, res) {
 
     return res.json({ ok: true });
   } catch (e) {
+    if (e instanceof ZodError) {
+      return res.status(400).json({
+        error: 'Invalid form submission',
+        issues: e.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+        })),
+      });
+    }
     return res.status(500).json({ error: e?.message || 'Submission failed' });
   }
 }

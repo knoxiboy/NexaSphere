@@ -14,6 +14,7 @@ router.delete('/api/content/activity-events/:activityKey/:eventId', activityEven
 
 // Admin auth
 router.post('/api/admin/login', adminAuthMiddleware.login);
+router.post('/api/admin/logout', adminAuthMiddleware.logout);
 
 router.get('/api/admin/events', adminAuthMiddleware.requireAdmin, eventsController.adminListEvents);
 router.post('/api/admin/events', adminAuthMiddleware.requireAdmin, eventsController.adminCreateEvent);

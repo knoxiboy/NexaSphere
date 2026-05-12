@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 # 1. Configuration & Persona
 # This instruction tells the bot exactly how to behave and what NexaSphere is.
 SYSTEM_PROMPT = """
@@ -23,7 +25,11 @@ If asked about something unrelated to tech or NexaSphere, politely steer the con
 """
 
 # 2. Initialize Gemini
-API_KEY = "AIzaSyBGuAv-NvJwUkjwrz3RJNaDSiFMihFWvLo"
+API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is not configured")
+
 genai.configure(api_key=API_KEY)
 
 model = genai.GenerativeModel(
@@ -59,11 +65,14 @@ async def chat_with_ai(request: ChatRequest):
         return {"reply": response.text}
 
     except Exception as e:
-        error_msg = str(e)
-        print(f"DEBUG ERROR: {error_msg}")
+        error_code = getattr(e, "status_code", None)
+        logger.warning(
+            "Gemini request failed",
+            extra={"error_type": type(e).__name__, "status_code": error_code},
+        )
         
         # Friendly error handling for Quota limits
-        if "429" in error_msg:
+        if error_code == 429 or getattr(getattr(e, "response", None), "status_code", None) == 429:
             return {"reply": "Nexa-AI is currently at peak capacity (Quota Limit). Please wait 60 seconds."}
         
         return {"reply": "Nexa-AI Core Offline. Connection recalibrating..."}
