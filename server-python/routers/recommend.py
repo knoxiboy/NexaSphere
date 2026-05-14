@@ -3,7 +3,7 @@ import json
 import redis
 import logging
 from fastapi import APIRouter, HTTPException
-from services.recommendation import compute_hybrid_recommendations
+from services.recommendation_logic import compute_hybrid_recommendations
 
 import time
 

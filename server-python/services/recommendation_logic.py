@@ -55,11 +55,11 @@ def fetch_data_with_sqlalchemy(user_id):
         try:
             with engine.connect() as conn:
                 # 1. Fetch Events
-                events_result = conn.execute(text("SELECT id, name, tags FROM events WHERE status != 'completed'"))
+                events_result = conn.execute(text('SELECT id, name, tags FROM "Events" WHERE status != \'completed\''))
                 events = [{"id": row.id, "name": row.name, "tags": row.tags} for row in events_result]
                 
                 # 2. Fetch all User Profiles
-                users_result = conn.execute(text("SELECT id, interests FROM user_profiles"))
+                users_result = conn.execute(text('SELECT id, interests FROM "Profile"'))
                 for row in users_result:
                     user_interests = row.interests
                     if isinstance(user_interests, str):
@@ -163,8 +163,9 @@ def get_recommendations(user_id, num_recommendations=5):
     events_df['collab_score'] = collab_scores
     
     # ---------------- Combine & Finalize ----------------
-    # Final Score = Content Score + Collaborative Score
-    events_df['final_score'] = events_df['content_score'] + events_df['collab_score']
+    # Final Score = Weighted Content Score + Weighted Collaborative Score
+    # For example, 70% weight for content-based, 30% for collaborative
+    events_df['final_score'] = (events_df['content_score'] * 0.7) + (events_df['collab_score'] * 0.3)
     
     recommended_events = events_df.sort_values(by='final_score', ascending=False).head(num_recommendations)
     

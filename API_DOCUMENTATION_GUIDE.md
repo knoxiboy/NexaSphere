@@ -120,9 +120,11 @@ GET /api/docs-info   → Documentation info
 - **Description:** Get top 5 recommended events for a specific user.
 - **Input:** `user_id` (Path parameter, string)
 - **Output:** JSON List of Event Objects (containing `id`, `name`, `tags`, and calculated `final_score`).
+- **Data Integration:** Fetches user interests from the `"Profile"` table and event tags from the `"Events"` table in PostgreSQL.
 - **Logic Used:** **Hybrid Content + Collaborative Filtering**.
   1. *Content-Based*: Uses `TfidfVectorizer` and Cosine Similarity to match user interest keywords against event tags.
-  2. *Collaborative Filtering*: Finds similar users based on shared interests and boosts the score of events they have already joined.
+  2. *Collaborative Filtering*: Implements user-user similarity logic to find similar users based on shared interests and boosts the score of events they have already joined.
+  3. *Combined Score*: Creates a weighted final score combining both methods (70% content-based, 30% collaborative).
 - **Performance Optimization:** Utilizes **Redis Caching**. Checks Redis before executing the ML model. If not cached, the model runs and stores the result in Redis for 60 minutes (3600 seconds) to prevent redundant recalculations.
 
 #### Admin & Notifications (4 endpoints)

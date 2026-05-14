@@ -33,11 +33,15 @@ if not API_KEY:
 else:
     genai.configure(api_key=API_KEY)
     model = genai.GenerativeModel(
-        model_name='gemini-3.1-flash-lite-preview',
-        system_instruction=SYSTEM_PROMPT
+        model_name='gemini-3.1-flash-lite-preview'
     )
 
 app = FastAPI(title="NexaSphere AI Core")
+
+@app.get("/")
+async def root():
+    return {"message": "NexaSphere AI Core API is running. Visit /docs for Swagger API documentation."}
+
 from routers import forms, recommend
 app.include_router(forms.router)
 app.include_router(recommend.router)
@@ -62,8 +66,9 @@ async def chat_with_ai(request: ChatRequest):
         if not model:
             return {"reply": "Nexa-AI Core is offline. (GEMINI_API_KEY missing)"}
             
-        # We send the user message to the model initialized with system instructions
-        response = model.generate_content(request.message)
+        # We send the user message to the model along with system instructions manually
+        full_prompt = f"System Instruction:\n{SYSTEM_PROMPT}\n\nUser Message:\n{request.message}"
+        response = model.generate_content(full_prompt)
         
         if not response.text:
             return {"reply": "Nexa-AI is processing, but returned an empty signal. Try rephrasing."}
