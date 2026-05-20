@@ -621,3 +621,321 @@
     gap: 12px;
   }
 }
+
+/* ── Interactive Roadmap Builder CSS ── */
+
+.roadmap-builder-container {
+  max-width: 1350px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 80vh;
+}
+
+.glassmorphic-panel {
+  background: rgba(30, 30, 30, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+[data-theme="light"] .glassmorphic-panel {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
+}
+
+/* Canvas Grid Pattern overlay */
+.interactive-roadmap-canvas {
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .interactive-roadmap-canvas {
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.02);
+}
+
+.canvas-grid-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(230, 57, 70, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(230, 57, 70, 0.035) 1px, transparent 1px);
+}
+
+[data-theme="light"] .canvas-grid-overlay {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
+}
+
+/* Moving energy pulse animation */
+@keyframes flow-energy {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.flowing-energy-line {
+  animation: flow-energy 1.2s linear infinite;
+}
+
+/* Node card actions display */
+.canvas-node-card {
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.node-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.node-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.node-card-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.canvas-node-card:hover .node-card-actions,
+.canvas-node-card:focus-within .node-card-actions {
+  opacity: 1;
+  transform: none;
+}
+
+.action-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--t1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .action-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.action-btn:hover {
+  background: var(--c1);
+  color: #fff;
+  border-color: var(--c1);
+  transform: scale(1.08);
+}
+
+.action-btn.delete:hover {
+  background: var(--error);
+  border-color: var(--error);
+}
+
+/* Canvas split view styling */
+.canvas-wrapper-outer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.canvas-instruction-bar {
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* Scrollbar styles for glass panels */
+.canvas-container-outer::-webkit-scrollbar,
+.prereq-selector-scroll::-webkit-scrollbar,
+.builder-sidebar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.canvas-container-outer::-webkit-scrollbar-track,
+.builder-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.canvas-container-outer::-webkit-scrollbar-thumb,
+.prereq-selector-scroll::-webkit-scrollbar-thumb,
+.builder-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+/* Sidebar item focus overrides */
+.sidebar-node-btn {
+  border: 1px solid transparent;
+}
+
+.sidebar-node-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="light"] .sidebar-node-btn:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Custom modal dropdown selector */
+.dropdown-select {
+  cursor: pointer;
+  color: var(--t1);
+}
+
+.dropdown-select option {
+  background-color: var(--bg);
+  color: var(--t1);
+}
+
+/* Modal Form control input fields */
+.glass-input {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--t1);
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+[data-theme="light"] .glass-input {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.glass-input:focus {
+  border-color: var(--c1);
+}
+
+/* Modal Status selector buttons */
+.status-select-btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--t2);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+[data-theme="light"] .status-select-btn {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.status-select-btn:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.status-select-btn.active.bg-slate {
+  background: rgba(100, 100, 100, 0.15);
+  color: #fff;
+  border-color: #64748b;
+  box-shadow: 0 0 10px rgba(100, 100, 100, 0.15);
+}
+
+.status-select-btn.active.bg-amber {
+  background: rgba(255, 193, 7, 0.15);
+  color: #FFC107;
+  border-color: #FFC107;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.25);
+}
+
+.status-select-btn.active.bg-emerald {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4CAF50;
+  border-color: #4CAF50;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.25);
+}
+
+.status-select-btn.active.bg-ruby {
+  background: rgba(230, 57, 70, 0.15);
+  color: #E63946;
+  border-color: #E63946;
+  box-shadow: 0 0 10px rgba(230, 57, 70, 0.25);
+}
+
+/* Checkbox design overrides */
+.rounded-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--c1);
+  cursor: pointer;
+}
+
+/* Modal box custom state glows */
+.modal-box.glowing-amber-modal {
+  border-color: rgba(255, 193, 7, 0.35) !important;
+  box-shadow: 0 12px 48px rgba(255, 193, 7, 0.08), 0 0 80px rgba(255, 193, 7, 0.03);
+}
+
+.modal-box.glowing-emerald-modal {
+  border-color: rgba(76, 175, 80, 0.35) !important;
+  box-shadow: 0 12px 48px rgba(76, 175, 80, 0.08), 0 0 80px rgba(76, 175, 80, 0.03);
+}
+
+.modal-box.glowing-ruby-modal {
+  border-color: rgba(230, 57, 70, 0.35) !important;
+  box-shadow: 0 12px 48px rgba(230, 57, 70, 0.08), 0 0 80px rgba(230, 57, 70, 0.03);
+}
+
+/* Active node state highlights on drag */
+.focused-node {
+  border-color: var(--c1) !important;
+  box-shadow: 0 0 20px rgba(230, 57, 70, 0.45) !important;
+  transform: scale(1.02);
+  z-index: 50;
+}
+
+.connecting-source-node {
+  border-color: var(--warning) !important;
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.45) !important;
+  transform: scale(1.02);
+  z-index: 50;
+}
+
+/* Responsive elements */
+@media (max-width: 992px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
