@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { events as fallbackEvents } from '../../data/eventsData';
 import { BannerOrbs } from '../../shared/MotionLayer';
 import Footer from '../../shared/Footer';
@@ -44,6 +44,39 @@ function EventsPageContent({ onBack, onEventClick, events = fallbackEvents }) {
         <p className="section-subtitle pop-in" style={{ animationDelay: '.1s', maxWidth: '520px', margin: '0 auto', position:'relative',zIndex:1 }}>
           Where ideas come to life. Every event is a milestone in the NexaSphere journey.
         </p>
+      </div>
+
+      <div className="container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '30px', position: 'relative', zIndex: 10 }}>
+        <div style={{ display: 'flex', background: 'var(--card)', borderRadius: '30px', padding: '4px', border: '1px solid var(--bdr)', backdropFilter: 'blur(10px)' }}>
+          <button 
+            onClick={() => setViewMode('list')}
+            style={{ 
+              padding: '8px 24px', 
+              borderRadius: '26px', 
+              border: 'none', 
+              background: viewMode === 'list' ? 'var(--c1a)' : 'transparent',
+              color: viewMode === 'list' ? 'var(--c1)' : 'var(--t2)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all .2s'
+            }}>
+            List View
+          </button>
+          <button 
+            onClick={() => setViewMode('calendar')}
+            style={{ 
+              padding: '8px 24px', 
+              borderRadius: '26px', 
+              border: 'none', 
+              background: viewMode === 'calendar' ? 'var(--c1a)' : 'transparent',
+              color: viewMode === 'calendar' ? 'var(--c1)' : 'var(--t2)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all .2s'
+            }}>
+            Calendar View
+          </button>
+        </div>
       </div>
 
       <div className="container">
