@@ -4,6 +4,7 @@ import App from './App.jsx';
 import GlobalErrorBoundary from './components/GlobalErrorBoundary.jsx';
 import { ThemeProvider } from './context/theme/ThemeProvider.tsx';
 import { registerSW } from 'virtual:pwa-register';
+import { SocketProvider } from './context/SocketContext';
 
 
 
