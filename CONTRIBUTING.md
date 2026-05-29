@@ -34,3 +34,8 @@ If you add a new production origin, update the backend CORS allowlist and any do
 1. Prefer small, readable functions.
 2. Remove dead code and stale config files when they are no longer needed.
 3. Update documentation alongside behavior changes.
+## Code Formatting
+- JavaScript/TypeScript: Prettier (2 spaces)
+- Python: Black (4 spaces)
+- Java: EditorConfig (4 spaces)
+
