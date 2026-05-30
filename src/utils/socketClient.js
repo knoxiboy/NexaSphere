@@ -68,10 +68,6 @@ export function initializeSocket(serverUrl = getSocketServerUrl()) {
       'Socket.IO reconnect failed:'
     );
   });
-    );
-  });
-  // Setup custom event listeners
-  setupEventListeners();
 
   return socket;
 }
