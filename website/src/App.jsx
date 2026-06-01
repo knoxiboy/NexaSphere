@@ -1,4 +1,13 @@
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, lazy, Suspense, memo } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+  lazy,
+  Suspense,
+  memo,
+} from 'react';
 import {
   BrowserRouter,
   Routes,
@@ -428,10 +437,15 @@ function AppShell() {
     };
 
     fetchEvents();
-    const interval = setInterval(fetchEvents, 4000);
+    // Removed unconditional 4s polling — socket event handles live updates.
+    // Re-fetch once when the tab becomes visible again after being backgrounded.
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') fetchEvents();
+    };
     const onContentUpdated = (data) => {
       if (data?.type === 'events' || data?.type === 'activities') fetchEvents();
     };
+    document.addEventListener('visibilitychange', onVisibilityChange);
     on('content:updated', onContentUpdated);
 
     return () => {
