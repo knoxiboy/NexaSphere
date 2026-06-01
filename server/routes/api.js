@@ -4,10 +4,12 @@ import * as activityEventsController from '../controllers/activityEventsControll
 import * as adminAuthMiddleware from '../middleware/adminAuthMiddleware.js';
 import * as coreTeamController from '../controllers/coreTeamController.js';
 import * as eventRegistrationController from '../controllers/eventRegistrationController.js';
+import * as usersController from '../controllers/usersController.js';
 
 const router = Router();
 
 // Public
+router.get('/api/users', usersController.getPublicUsers);
 router.get('/api/content/events', eventsController.listEvents);
 router.post('/api/content/events/:eventId/register', eventRegistrationController.registerForEvent);
 router.get(
@@ -26,6 +28,7 @@ router.delete(
 );
 
 // Admin auth
+router.get('/api/admin/users', adminAuthMiddleware.requireAdmin, usersController.getAdminUsers);
 router.post('/api/admin/login', adminAuthMiddleware.login);
 router.post('/api/admin/logout', adminAuthMiddleware.logout);
 
