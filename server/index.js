@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import helmet from 'helmet';
 import express from 'express';
+import { body, validationResult } from 'express-validator';
 import cors from 'cors';
 import morgan from 'morgan';
 import { promises as fs } from 'fs';
@@ -282,7 +283,41 @@ app.get('/api/admin/me', adminAuth, (req, res) => {
 // Real-time Push Subscriber channels
 const pushSubscriptions = new Set();
 
-app.post('/api/notifications/subscribe', (req, res) => {
+const validatePushSubscription = [
+  body('subscription').isObject().withMessage('subscription must be an object'),
+  body('subscription.endpoint')
+    .isURL()
+    .withMessage('endpoint must be a valid URL')
+    .isLength({ max: 2048 }),
+  body('subscription.keys').isObject().withMessage('keys must be an object'),
+  body('subscription.keys.p256dh')
+    .isString()
+    .isLength({ max: 256 })
+    .withMessage('p256dh must be a string up to 256 chars'),
+  body('subscription.keys.auth')
+    .isString()
+    .isLength({ max: 128 })
+    .withMessage('auth must be a string up to 128 chars'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid subscription payload', details: errors.array() });
+    }
+
+    // Strict sanitization: reconstruct object to drop malicious properties and limit memory size
+    const {
+      endpoint,
+      keys: { p256dh, auth },
+    } = req.body.subscription;
+    req.body.subscription = { endpoint, keys: { p256dh, auth } };
+
+    next();
+  },
+];
+
+app.post('/api/notifications/subscribe', validatePushSubscription, (req, res) => {
   try {
     const { subscription } = req.body;
     if (subscription) {
@@ -298,7 +333,7 @@ app.post('/api/notifications/subscribe', (req, res) => {
   }
 });
 
-app.post('/api/notifications/unsubscribe', (req, res) => {
+app.post('/api/notifications/unsubscribe', validatePushSubscription, (req, res) => {
   try {
     const { subscription } = req.body;
     if (subscription) pushSubscriptions.delete(JSON.stringify(subscription));
