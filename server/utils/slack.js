@@ -90,7 +90,12 @@ function formatSlackMessage(data) {
             ? [
                 {
                   title: "Timestamp",
-                  value: new Date(data.timestamp).toISOString(),
+                  value: (() => {
+                    const parsedDate = new Date(data.timestamp);
+                    return !isNaN(parsedDate.getTime()) 
+                      ? parsedDate.toISOString() 
+                      : new Date().toISOString(); // Safe fallback to current time
+                  })(),
                   short: true,
                 },
               ]
