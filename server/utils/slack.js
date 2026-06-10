@@ -48,10 +48,56 @@ async function sendSlackAlert(alertData) {
 function formatSlackMessage(data) {
   const color = data.severity === 'critical' ? 'danger' : 'warning';
 
+  const blockFields = [];
+  if (data.message) blockFields.push({ type: "mrkdwn", text: `*Message:*\n${data.message}` });
+  if (data.url) blockFields.push({ type: "mrkdwn", text: `*URL:*\n${data.url}` });
+  if (data.method) blockFields.push({ type: "mrkdwn", text: `*Method:*\n${data.method}` });
+  if (data.userId) blockFields.push({ type: "mrkdwn", text: `*User ID:*\n${data.userId}` });
+  if (data.timestamp) blockFields.push({ type: "mrkdwn", text: `*Timestamp:*\n${new Date(data.timestamp).toISOString()}` });
+
+  const blocks = [
+    {
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: data.title || "🚨 Alert",
+        emoji: true
+      }
+    }
+  ];
+
+  if (blockFields.length > 0) {
+    blocks.push({
+      type: "section",
+      fields: blockFields
+    });
+  }
+
+  if (data.stack) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Stack Trace:*\n\`\`\`${data.stack}\`\`\``
+      }
+    });
+  }
+
+  blocks.push({
+    type: "context",
+    elements: [
+      {
+        type: "plain_text",
+        text: "NexaSphere Error Monitoring"
+      }
+    ]
+  });
+
   return {
     attachments: [
       {
         color: color,
+        blocks: blocks,
         title: data.title || '🚨 Alert',
         fields: [
           {
@@ -132,34 +178,37 @@ async function sendPerformanceAlert(metrics) {
     const payload = {
       attachments: [
         {
-          color: metrics.errorRate > 5 ? 'danger' : 'warning',
-          title: '📊 Performance Alert',
-          fields: [
+          color: metrics.errorRate > 5 ? "danger" : "warning",
+          blocks: [
             {
-              title: 'Error Rate',
-              value: `${metrics.errorRate.toFixed(2)}%`,
-              short: true,
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "📊 Performance Alert",
+                emoji: true
+              }
             },
             {
-              title: 'Total Requests',
-              value: metrics.totalRequests.toString(),
-              short: true,
+              type: "section",
+              fields: [
+                { type: "mrkdwn", text: `*Error Rate:*\n${metrics.errorRate.toFixed(2)}%` },
+                { type: "mrkdwn", text: `*Threshold:*\n5%` },
+                { type: "mrkdwn", text: `*Total Requests:*\n${metrics.totalRequests}` },
+                { type: "mrkdwn", text: `*Total Errors:*\n${metrics.totalErrors}` }
+              ]
             },
             {
-              title: 'Total Errors',
-              value: metrics.totalErrors.toString(),
-              short: true,
-            },
-            {
-              title: 'Threshold',
-              value: '5%',
-              short: true,
-            },
-          ],
-          footer: 'NexaSphere Performance Monitoring',
-          ts: Math.floor(Date.now() / 1000),
-        },
-      ],
+              type: "context",
+              elements: [
+                {
+                  type: "plain_text",
+                  text: "NexaSphere Performance Monitoring"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     };
 
     const response = await fetch(webhookUrl, {

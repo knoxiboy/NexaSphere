@@ -55,20 +55,22 @@ const colors = {
 
 winston.addColors(colors);
 
-// Define transports
-// 1. Define the base format WITHOUT colorize
-const baseFileFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.errors({ stack: true }),
-  winston.format.splat(),
-  winston.format.printf((info) => {
-    const { timestamp, level, message, ...args } = info;
-    const ts = typeof timestamp === 'string' ? timestamp : new Date().toISOString();
+// Define base log layout template
+const logLayout = winston.format.printf((info) => {
+  const { timestamp, level, message, ...args } = info;
 
-    return `${timestamp} [${level}]: ${message} ${
-      Object.keys(args).length ? JSON.stringify(args, null, 2) : ''
-    }`;
-  })
+  const ts = timestamp ? timestamp.slice(0, 19).replace("T", " ") : "";
+
+  return `${ts} [${level}]: ${message} ${
+    Object.keys(args).length ? JSON.stringify(args, null, 2) : ""
+  }`;
+});
+
+// Define clean log format for file transports
+const baseFileFormat = winston.format.combine(
+  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
+  winston.format.errors({ stack: true }),
+  logLayout
 );
 
 // Determine runtime levels: Console is dynamic, historical files maintain info baseline
@@ -80,10 +82,15 @@ const globalGatekeeperLevel = consoleLevel === 'debug' ? 'debug' : fileBaselineL
 
 // Define activeTransports array, starting with the Console transport
 const activeTransports = [
-  // Console transport
+  // Console transport (Colorizes exclusively for terminal output)
   new winston.transports.Console({
     level: consoleLevel,
-    format: winston.format.combine(winston.format.colorize({ all: true }), baseFileFormat),
+    format: winston.format.combine(
+      winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
+      winston.format.errors({ stack: true }),
+      winston.format.colorize({ all: true }),
+      logLayout
+    ),
   }),
 ];
 
@@ -117,7 +124,7 @@ if (isStorageWritable) {
 
 // Create logger instance
 const logger = winston.createLogger({
-  level: globalGatekeeperLevel, // <-- Change this line
+  level: globalGatekeeperLevel,
   levels,
   format: baseFileFormat,
   transports: activeTransports,
@@ -128,7 +135,7 @@ const logger = winston.createLogger({
           datePattern: 'YYYY-MM-DD',
           maxSize: '20m',
           maxFiles: '14d',
-          format: baseFileFormat, //  FIX: Ensures clean exception dumps
+          format: baseFileFormat,
           utc: true,
         }),
       ]
@@ -140,7 +147,7 @@ const logger = winston.createLogger({
           datePattern: 'YYYY-MM-DD',
           maxSize: '20m',
           maxFiles: '14d',
-          format: baseFileFormat, //  FIX: Ensures clean rejection dumps
+          format: baseFileFormat,
           utc: true,
         }),
       ]

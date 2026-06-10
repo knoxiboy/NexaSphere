@@ -7,6 +7,8 @@ import { Server } from 'socket.io';
 import logger from '../utils/logger.js';
 import { getAdminSession } from '../repositories/adminSessionsRepository.js';
 import { resolveAdminPermissions, getRoomsForPermissions } from './eventPermissions.js';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { getRedisClient } from '../utils/redis.js';
 
 let io = null;
 const connectedUsers = new Map();
@@ -49,6 +51,20 @@ export function initializeSocketIO(httpServer) {
     reconnectionAttempts: 5,
   });
 
+  const pubClient = getRedisClient();
+  if (pubClient) {
+    try {
+      const subClient = pubClient.duplicate();
+      io.adapter(createAdapter(pubClient, subClient));
+      logger.info('Socket.IO using Redis adapter for horizontal scaling.');
+    } catch (err) {
+      logger.error('Failed to configure Socket.IO Redis adapter:', err);
+      logger.info('Socket.IO falling back to in-memory adapter.');
+    }
+  } else {
+    logger.info('Socket.IO using in-memory adapter (REDIS_URL not set).');
+  }
+
   // Connection auth middleware — checks handshake auth token
   io.use(async (socket, next) => {
     const token =
@@ -87,14 +103,14 @@ export function _onConnection(socket) {
     if (!socket.adminPermissions) {
       socket.adminPermissions = resolveAdminPermissions(socket.adminSession);
     }
-    const rooms = getRoomsForPermissions(socket.adminPermissions);
-    for (const room of rooms) {
+    const adminRooms = getRoomsForPermissions(socket.adminPermissions);
+    for (const room of adminRooms) {
       socket.join(room);
     }
     logger.info('Admin joined scoped rooms', {
       socketId: socket.id,
       username: socket.adminSession?.username,
-      rooms,
+      rooms: adminRooms,
     });
   }
 
@@ -306,14 +322,14 @@ export function _onConnection(socket) {
       socket.adminSession = session;
       socket.adminAuthenticated = true;
       socket.adminPermissions = resolveAdminPermissions(session);
-      const rooms = getRoomsForPermissions(socket.adminPermissions);
-      for (const room of rooms) {
+      const authRooms = getRoomsForPermissions(socket.adminPermissions);
+      for (const room of authRooms) {
         socket.join(room);
       }
       logger.info('Admin authenticated via socket event', {
         socketId: socket.id,
         username: session.username,
-        rooms,
+        rooms: authRooms,
       });
       socket.emit('admin:authenticated', { success: true });
     } catch (e) {
@@ -445,7 +461,7 @@ export function emitToRole(roles, eventName, data) {
   const list = Array.isArray(roles) ? roles : [roles];
   const targets = new Set();
   for (const role of list) {
-    if (role === 'admin' || role === 'super_admin') {
+    if (role === 'admin' || role === 'super_admin' || role === 'SuperAdmin') {
       targets.add('admin-room');
       continue;
     }
