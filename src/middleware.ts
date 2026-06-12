@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
+import createIntlMiddleware from 'next-intl/middleware';
 
-// Matcher to protect workspace routes (e.g., /w/:workspaceId/...)
-export const config = {
-  matcher: ['/w/:workspaceId*/:path*', '/api/w/:workspaceId*/:path*'],
-};
+const intlMiddleware = createIntlMiddleware({
+  locales: ['en', 'es'],
+  defaultLocale: 'en',
+  localeDetection: true,
+});
 
 const JWKS_URI = process.env.JWKS_URI || `${process.env.NEXTAUTH_URL || ''}/.well-known/jwks.json`;
 const EXPECTED_ISSUER = process.env.JWT_ISSUER || process.env.NEXTAUTH_URL || '';
@@ -21,17 +23,19 @@ function getJWKS() {
   return jwksClient;
 }
 
-/**
- * Next.js Middleware to enforce Multi-Tenant isolation and verify tenant-scoped access.
- */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Extract workspace/tenant ID from the route path:
-  // e.g. path starts with "/w/[workspaceId]" or "/api/w/[workspaceId]"
-  const pathParts = pathname.split('/');
+  // i18n handling for non-API routes
+  if (!pathname.startsWith('/api/')) {
+    const intlResponse = intlMiddleware(request);
+    if (intlResponse) {
+      return intlResponse;
+    }
+  }
 
-  // Find index of 'w' to determine the next parameter as workspaceId
+  // JWT verification for workspace routes
+  const pathParts = pathname.split('/');
   const wIndex = pathParts.findIndex((part) => part === 'w');
 
   if (wIndex === -1 || wIndex + 1 >= pathParts.length) {
@@ -40,13 +44,11 @@ export async function middleware(request: NextRequest) {
 
   const workspaceId = pathParts[wIndex + 1];
 
-  // Retrieve user session / JWT cookie (standard auth tokens)
   const token =
     request.cookies.get('session-token')?.value ||
     request.cookies.get('__Secure-next-auth.session-token')?.value;
 
   if (!token) {
-    // Redirect to login if this is a web route, or return 401 if it's an API route
     if (pathname.startsWith('/api/')) {
       return new NextResponse(
         JSON.stringify({ error: 'Authentication required. No session found.' }),
@@ -60,7 +62,6 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // 1. Verify session token cryptographically
     const decodedSession = await verifyJwt(token);
 
     if (!decodedSession || !decodedSession.userId) {
@@ -68,11 +69,6 @@ export async function middleware(request: NextRequest) {
     }
 
     const userId = decodedSession.userId;
-
-    // 2. Verify user tenant access
-    // Under Edge runtime, standard Prisma direct connections may fail,
-    // so we can perform an edge-compatible DB check or call an internal service/API.
-    // For demonstration of the middleware's logic:
     const hasAccess = await fetchTenantAccess(userId, workspaceId, request.nextUrl.origin);
 
     if (!hasAccess) {
@@ -86,7 +82,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
 
-    // Attach workspace ID and User ID to headers for downstream requests
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-workspace-id', workspaceId);
     requestHeaders.set('x-user-id', userId);
@@ -111,10 +106,6 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-/**
- * Cryptographically verify a JWT using the configured JWKS endpoint.
- * Rejects tokens with alg:none, expired tokens, and invalid claims.
- */
 async function verifyJwt(token: string): Promise<Record<string, unknown> | null> {
   try {
     const client = getJWKS();
@@ -134,15 +125,11 @@ async function verifyJwt(token: string): Promise<Record<string, unknown> | null>
   }
 }
 
-/**
- * Validates tenant access via a secure internal endpoint or mock validation
- */
 async function fetchTenantAccess(
   userId: string,
   workspaceId: string,
   origin: string
 ): Promise<boolean> {
-  // During local development/testing, we can fall back to true or make an internal fetch
   try {
     const res = await fetch(
       `${origin}/api/auth/verify-tenant?userId=${userId}&workspaceId=${workspaceId}`,
@@ -164,3 +151,10 @@ async function fetchTenantAccess(
     return false;
   }
 }
+
+export const config = {
+  matcher: [
+    '/((?!api|_next|_vercel|.*\\..*).*)',
+    '/api/w/:workspaceId*/:path*',
+  ],
+};
