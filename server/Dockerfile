@@ -1,8 +1,8 @@
 # Stage 1: Install production dependencies
 FROM node:22-alpine AS deps
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Upgrade alpine packages and install dumb-init
+RUN apk update && apk upgrade --no-cache && apk add --no-cache dumb-init
 
 # Create app directory with correct permissions before switching user
 RUN mkdir -p /app && chown -R node:node /app
@@ -19,6 +19,8 @@ RUN npm ci --omit=dev --prefer-offline
 
 # Stage 2: Production runtime image
 FROM node:22-alpine AS production
+
+RUN apk update && apk upgrade --no-cache
 
 ENV NODE_ENV=production
 
