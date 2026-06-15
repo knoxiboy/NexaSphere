@@ -15,6 +15,7 @@ const TABS = [
   'Gamification',
   'Forum',
   'Mentorship',
+  'Q&A / Polling',
   'About',
   'Core Team',
   'Contact',

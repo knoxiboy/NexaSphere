@@ -94,4 +94,7 @@ export const EVENTS = {
   OFFLINE_MODE: 'offline:enabled',
 
   ONLINE_RECONNECTED: 'online:reconnected',
+
+  QA_UPDATED: 'qa:updated',
+  POLL_UPDATED: 'poll:updated',
 };

@@ -107,6 +107,12 @@ const links = [
     label: 'Circuit Breaker',
     icon: 'Activity',
   },
+  {
+    to: '/dashboard/qa-poll',
+    label: 'Q&A / Polling',
+    icon: 'MessageSquare',
+    requiredScope: 'events:read',
+  },
 ];
 
 export function Sidebar() {
