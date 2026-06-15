@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import { fallbackCategories, fallbackThreads } from '../../data/forumData.js';
 import Footer from '../../shared/Footer';
+import { EmptyState } from '../../components/EmptyState';
 
 export default function ForumPage({ onBack }) {
   const navigate = useNavigate();
@@ -224,9 +225,15 @@ export default function ForumPage({ onBack }) {
             Loading discussions...
           </div>
         ) : filteredThreads.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-secondary)' }}>
-            No threads found. Start a new discussion!
-          </div>
+          <EmptyState
+            title="No Threads Found"
+            description="No threads match your current filters. Try adjusting your search or selecting a different category."
+            action={
+              <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                Start a New Discussion
+              </button>
+            }
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {filteredThreads.map((thread) => (

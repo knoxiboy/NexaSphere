@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../utils/apiClient';
 import { fallbackThreads, fallbackReplies } from '../../data/forumData.js';
+import { EmptyState } from '../../components/EmptyState';
 
 export default function ForumThreadPage({ onBack }) {
   const { id } = useParams();
@@ -314,17 +315,10 @@ export default function ForumThreadPage({ onBack }) {
         </h2>
 
         {replies.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: 40,
-              color: 'var(--text-secondary)',
-              border: '1px dashed var(--bdr)',
-              borderRadius: 12,
-            }}
-          >
-            No replies yet. Be the first to respond!
-          </div>
+          <EmptyState
+            title="No Replies Yet"
+            description="Be the first to respond to this thread and start the conversation!"
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {replies.map((reply) => (
