@@ -485,6 +485,46 @@ async function fetchWithAuth(url, options = {}) {
         }
       }
 
+      // /api/admin/subscriptions
+      else if (url.startsWith('/api/admin/subscriptions')) {
+        let subs = getDb('subscriptions', []);
+
+        if (method === 'GET' && url === '/api/admin/subscriptions') {
+          resolve({ subscriptions: subs });
+        }
+        if (method === 'GET' && url === '/api/admin/subscriptions/stats') {
+          resolve({
+            total: subs.length,
+            premium: subs.filter((s) => s.tier === 'premium').length,
+            pro: subs.filter((s) => s.tier === 'pro').length,
+            revenue: subs.reduce((sum, s) => sum + (s.price || 0), 0),
+          });
+        }
+        if (method === 'POST' && !url.includes('/cancel') && !url.includes('/billing')) {
+          const newSub = {
+            id: Date.now().toString(),
+            userId: body.userId,
+            tier: body.tierId,
+            status: 'active',
+            price: body.tierId === 'premium' ? 499 : 999,
+            currentPeriodEnd: Date.now() + 30 * 86400000,
+            createdAt: Date.now(),
+          };
+          subs = [...subs, newSub];
+          setDb('subscriptions', subs);
+          resolve(newSub);
+        }
+        if (method === 'POST' && url.includes('/cancel')) {
+          const userId = url.split('/')[4];
+          subs = subs.map((s) => (s.userId === userId ? { ...s, status: 'cancelled' } : s));
+          setDb('subscriptions', subs);
+          resolve({ success: true });
+        }
+        if (url.includes('/billing')) {
+          resolve({ invoices: [] });
+        }
+      }
+
       // /api/admin/events/:eventId/analytics
       else if (url.match(/\/api\/admin\/events\/[^\/]+\/analytics/)) {
         const eventId = url.split('/')[4];
@@ -938,6 +978,46 @@ export const api = {
       eventEmitter.emit(EVENTS.NOTIFY, { type: 'success', message: `Reply ${status}` });
       return result;
     },
+  },
+
+  subscriptions: {
+    getAll: async () => {
+      if (auth.isOfflineMode()) {
+        const subs = safeJsonParse(localStorage.getItem('ns_db_subscriptions'), []);
+        return { subscriptions: subs };
+      }
+      return fetchWithAuth('/api/admin/subscriptions');
+    },
+    getStats: async () => {
+      if (auth.isOfflineMode()) {
+        const subs = safeJsonParse(localStorage.getItem('ns_db_subscriptions'), []);
+        return {
+          total: subs.length,
+          premium: subs.filter((s) => s.tier === 'premium').length,
+          pro: subs.filter((s) => s.tier === 'pro').length,
+          revenue: subs.reduce((sum, s) => sum + (s.price || 0), 0),
+        };
+      }
+      return fetchWithAuth('/api/admin/subscriptions/stats');
+    },
+    create: async (userId, tierId) => {
+      const result = await fetchWithAuth('/api/admin/subscriptions', {
+        method: 'POST',
+        body: JSON.stringify({ userId, tierId }),
+      });
+      eventEmitter.emit(EVENTS.SUBSCRIPTION_CREATED, result);
+      eventEmitter.emit(EVENTS.NOTIFY, { type: 'success', message: 'Subscription created' });
+      return result;
+    },
+    cancel: async (userId) => {
+      const result = await fetchWithAuth(`/api/admin/subscriptions/${userId}/cancel`, {
+        method: 'POST',
+      });
+      eventEmitter.emit(EVENTS.SUBSCRIPTION_CANCELLED, result);
+      eventEmitter.emit(EVENTS.NOTIFY, { type: 'success', message: 'Subscription cancelled' });
+      return result;
+    },
+    getBillingHistory: (userId) => fetchWithAuth(`/api/admin/subscriptions/${userId}/billing`),
   },
 };
 

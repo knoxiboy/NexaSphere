@@ -107,6 +107,12 @@ const links = [
     label: 'Circuit Breaker',
     icon: 'Activity',
   },
+  {
+    to: '/dashboard/subscriptions',
+    label: 'Subscriptions',
+    icon: 'Award',
+    requiredScope: 'events:read',
+  },
 ];
 
 export function Sidebar() {

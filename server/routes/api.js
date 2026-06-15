@@ -14,6 +14,7 @@ import { authRateLimiter, protectedActionRateLimiter } from '../middleware/authR
 import { portfolioRepository } from '../repositories/portfolioRepository.js';
 import { achievementsRepository } from '../repositories/achievementsRepository.js';
 import { portfolioService } from '../services/portfolioService.js';
+import * as subscriptionsController from '../controllers/subscriptionsController.js';
 
 const router = Router();
 
@@ -41,9 +42,24 @@ router.delete(
 
 // Admin auth
 router.get('/api/admin/users', adminAuthMiddleware.requireAdmin, usersController.getAdminUsers);
-router.post('/api/admin/users', adminAuthMiddleware.requireAdmin, adminAuditMiddleware, usersController.adminCreateUser);
-router.put('/api/admin/users/:id', adminAuthMiddleware.requireAdmin, adminAuditMiddleware, usersController.adminUpdateUser);
-router.delete('/api/admin/users/:id', adminAuthMiddleware.requireAdmin, adminAuditMiddleware, usersController.adminDeactivateUser);
+router.post(
+  '/api/admin/users',
+  adminAuthMiddleware.requireAdmin,
+  adminAuditMiddleware,
+  usersController.adminCreateUser
+);
+router.put(
+  '/api/admin/users/:id',
+  adminAuthMiddleware.requireAdmin,
+  adminAuditMiddleware,
+  usersController.adminUpdateUser
+);
+router.delete(
+  '/api/admin/users/:id',
+  adminAuthMiddleware.requireAdmin,
+  adminAuditMiddleware,
+  usersController.adminDeactivateUser
+);
 router.post('/api/admin/login', authRateLimiter, adminAuthMiddleware.login);
 router.post('/api/admin/logout', adminAuthMiddleware.requireAdmin, adminAuthMiddleware.logout);
 
@@ -94,6 +110,35 @@ router.delete(
   }),
   adminAuditMiddleware,
   coreTeamController.adminDeleteCoreTeamMember
+);
+
+// Subscription management APIs
+router.get(
+  '/api/admin/subscriptions',
+  adminAuthMiddleware.requireScope('events:read'),
+  subscriptionsController.listSubscriptions
+);
+router.get(
+  '/api/admin/subscriptions/stats',
+  adminAuthMiddleware.requireScope('events:read'),
+  subscriptionsController.getStats
+);
+router.post(
+  '/api/admin/subscriptions',
+  adminAuthMiddleware.requireScope('events:write'),
+  adminAuditMiddleware,
+  subscriptionsController.createSubscription
+);
+router.post(
+  '/api/admin/subscriptions/:userId/cancel',
+  adminAuthMiddleware.requireScope('events:write'),
+  adminAuditMiddleware,
+  subscriptionsController.cancelSubscription
+);
+router.get(
+  '/api/admin/subscriptions/:userId/billing',
+  adminAuthMiddleware.requireScope('events:read'),
+  subscriptionsController.getBillingHistory
 );
 
 // Portfolio management APIs

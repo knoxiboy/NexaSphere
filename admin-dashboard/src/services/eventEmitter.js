@@ -94,4 +94,8 @@ export const EVENTS = {
   OFFLINE_MODE: 'offline:enabled',
 
   ONLINE_RECONNECTED: 'online:reconnected',
+
+  SUBSCRIPTION_CREATED: 'subscription:created',
+  SUBSCRIPTION_UPDATED: 'subscription:updated',
+  SUBSCRIPTION_CANCELLED: 'subscription:cancelled',
 };
