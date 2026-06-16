@@ -92,3 +92,27 @@ jobs:
           tag_name: production-${{ github.run_number }}
           name: Production Release ${{ github.run_number }}
           generate_release_notes: true
+  
+  notify-success:
+    name: Notify Slack Success
+    needs: create-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Slack Notification
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            --data "{\"text\":\"Production deployment successful. Release: production-${{ github.run_number }}. Triggered by: ${{ github.actor }}\"}"
+
+  notify-failure:
+    name: Notify Slack Failure
+    if: failure()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Failure Notification
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            --data "{\"text\":\"Production deployment failed. Workflow: ${{ github.workflow }}. Triggered by: ${{ github.actor }}\"}"
