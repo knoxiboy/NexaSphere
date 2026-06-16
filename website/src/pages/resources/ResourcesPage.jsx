@@ -7,6 +7,7 @@ import {
   difficultyLevels,
 } from '../../data/resourcesData';
 import apiClient from '../../utils/apiClient';
+import { getApiBase } from '../../utils/runtimeConfig';
 
 export default function ResourcesPage({ onBack }) {
   const [resources, setResources] = useState(fallbackResources);
@@ -18,7 +19,7 @@ export default function ResourcesPage({ onBack }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const base = import.meta.env.VITE_API_BASE || '';
+    const base = getApiBase();
     if (!base) return;
 
     setLoading(true);
@@ -78,7 +79,7 @@ export default function ResourcesPage({ onBack }) {
   };
 
   const handleDownload = (id) => {
-    const base = import.meta.env.VITE_API_BASE || '';
+    const base = getApiBase();
     if (base) {
       apiClient(`${base}/api/resources/${id}/download`, { method: 'POST' }).catch(() => {});
     }
