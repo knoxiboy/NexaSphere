@@ -684,6 +684,7 @@ function MainRouter({
         Portfolio: '/portfolio',
         Collab: '/collab',
         Explore: '/explore',
+        Resources: '/resources',
         About: '/about',
         'Core Team': '/team',
         Contact: '/contact',
@@ -1039,6 +1040,16 @@ function MainRouter({
               element={
                 <PageIn k="admin">
                   <AdminPage onBack={onBackHome} />
+                </PageIn>
+              }
+            />
+
+            {/* ── Resources / Library ── */}
+            <Route
+              path="/resources"
+              element={
+                <PageIn k="resources">
+                  <ResourcesPage onBack={onBackHome} />
                 </PageIn>
               }
             />
