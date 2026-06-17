@@ -38,6 +38,16 @@ test('Offline-First Sync and Compression Verification', async (t) => {
   await new Promise((resolve) => server.listen(0, resolve));
   const port = server.address().port;
 
+  const { studentAuthService } = await import('../services/studentAuthService.js');
+  const mockUser = {
+    id: 'student-test-uuid',
+    provider: 'github',
+    email: 'test@glbajajgroup.org',
+    full_name: 'Test Student',
+    role: 'student',
+  };
+  const token = studentAuthService.generateToken(mockUser);
+
   const sendRequest = (method, path, body = null, headers = {}) => {
     return new Promise((resolve) => {
       const options = {
@@ -47,6 +57,7 @@ test('Offline-First Sync and Compression Verification', async (t) => {
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
           ...headers,
         },
       };
