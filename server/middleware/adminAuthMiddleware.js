@@ -401,4 +401,18 @@ export const adminAuthMiddleware = {
   _safeEqual: safeEqual,
 };
 
+export const requirePermission = (permission) => {
+  return (req, res, next) => {
+    const permissions = req.user?.permissions || [];
+
+    if (!permissions.includes(permission)) {
+      return res.status(403).json({
+        error: "Permission denied",
+      });
+    }
+
+    next();
+  };
+};
+
 export { login, logout, requireAdmin, requireRole, requireScope };

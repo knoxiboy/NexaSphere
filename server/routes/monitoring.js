@@ -21,6 +21,7 @@ import { getServiceHealth, getFailoverStatus } from '../utils/failoverManager.js
 import securityPatchManager from "../utils/securityPatchManager.js";
 import encryptionManager from "../utils/encryptionManager.js";
 import { databaseFailoverManager } from "../utils/databaseFailoverManager.js";
+import { apiSecurityManager } from "../utils/apiSecurityManager.js";
 
 function requireMonitoringAuth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -570,6 +571,13 @@ router.get("/database/status", (req, res) => {
   res.json({
     success: true,
     data: databaseFailoverManager.getFailoverReport(),
+  });
+});
+
+router.get("/security/report", (req, res) => {
+  res.json({
+    success: true,
+    data: apiSecurityManager.getSecurityReport(),
   });
 });
 
