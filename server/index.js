@@ -38,6 +38,7 @@ import {
   activityAuthRateLimiter,
   portfolioRateLimiter,
   validateLimiters,
+  searchRateLimiter,
 } from './middleware/rateLimiter.js';
 import {
   authRateLimiter,
@@ -1060,6 +1061,11 @@ app.post('/api/streams/polls/:pollId/vote', streamController.votePoll);
 app.patch('/api/streams/polls/:pollId/close', adminAuth, streamController.closePoll);
 app.patch('/api/streams/chat/:messageId/moderate', adminAuth, streamController.moderateChatMessage);
 app.get('/api/admin/streams', adminAuth, streamController.adminListAll);
+
+// search routes
+app.get('/api/search', searchRateLimiter, searchController.search);
+app.get('/api/search/trending', searchRateLimiter, searchController.trending);
+app.get('/api/recommendations', searchRateLimiter, searchController.recommendations);
 
 // Public listings
 app.get('/api/content/team', async (req, res) => {
