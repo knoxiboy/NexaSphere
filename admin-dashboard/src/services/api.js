@@ -275,6 +275,48 @@ const getDb = (key, defaultVal) => {
       setDb(key, initialAnnouncements);
       return initialAnnouncements;
     }
+    if (key === 'sponsors') {
+      const initialSponsors = [
+        {
+          id: '1',
+          companyName: 'TechCorp India',
+          logoUrl: '',
+          description: 'Leading technology solutions provider supporting innovation in education.',
+          websiteUrl: 'https://example.com/techcorp',
+          contactPerson: 'Rahul Sharma',
+          contactEmail: 'rahul@techcorp.com',
+          tier: 'platinum',
+          agreementStart: '2026-01-01',
+          agreementEnd: '2026-12-31',
+          amount: 500000,
+          benefits: ['Logo on homepage', 'Event co-branding', 'Speaking slot', 'Premium placement'],
+          status: 'active',
+          isFeatured: true,
+          sortOrder: 1,
+          createdAt: '2026-06-01T10:00:00.000Z',
+        },
+        {
+          id: '2',
+          companyName: 'DevSolve Labs',
+          logoUrl: '',
+          description: 'Software development consultancy fostering campus tech communities.',
+          websiteUrl: 'https://example.com/devsolve',
+          contactPerson: 'Priya Patel',
+          contactEmail: 'priya@devsolve.com',
+          tier: 'gold',
+          agreementStart: '2026-03-01',
+          agreementEnd: '2026-08-31',
+          amount: 250000,
+          benefits: ['Logo on events', 'Newsletter mention', 'Booth at events'],
+          status: 'active',
+          isFeatured: false,
+          sortOrder: 2,
+          createdAt: '2026-06-05T08:00:00.000Z',
+        },
+      ];
+      setDb(key, initialSponsors);
+      return initialSponsors;
+    }
 
     return defaultVal;
   } catch {
@@ -455,46 +497,27 @@ async function fetchWithAuth(url, options = {}) {
         }
       }
 
-      // /api/admin/resources
-      else if (url.startsWith('/api/admin/resources')) {
-        let resources = getDb('resources', []);
-        const parts = url.split('/');
-        const id = parts[4];
-        const action = parts[5];
-
-        if (method === 'GET') {
-          const queryParams = new URLSearchParams(url.split('?')[1] || '');
-          const status = queryParams.get('status');
-          const q = queryParams.get('q');
-          let filtered = [...resources];
-          if (status) filtered = filtered.filter((r) => r.status === status);
-          if (q) {
-            const lower = q.toLowerCase();
-            filtered = filtered.filter(
-              (r) =>
-                r.title?.toLowerCase().includes(lower) ||
-                (r.description || '').toLowerCase().includes(lower)
-            );
-          }
-          resolve({ resources: filtered });
+      // /api/admin/sponsors
+      else if (url.startsWith('/api/admin/sponsors')) {
+        let sponsors = getDb('sponsors', []);
+        if (method === 'GET') resolve({ sponsors });
+        if (method === 'POST') {
+          const newSponsor = { ...body, id: Date.now().toString() };
+          sponsors = [newSponsor, ...sponsors];
+          setDb('sponsors', sponsors);
+          resolve(newSponsor);
         }
-        if (method === 'PUT' && id && !action) {
-          resources = resources.map((r) => (r.id === id ? { ...body, id } : r));
-          setDb('resources', resources);
+        if (method === 'PUT') {
+          const id = url.split('/').pop();
+          sponsors = sponsors.map((s) => (s.id === id ? { ...body, id } : s));
+          setDb('sponsors', sponsors);
           resolve({ ...body, id });
         }
-        if (method === 'DELETE' && id) {
-          resources = resources.filter((r) => r.id !== id);
-          setDb('resources', resources);
+        if (method === 'DELETE') {
+          const id = url.split('/').pop();
+          sponsors = sponsors.filter((s) => s.id !== id);
+          setDb('sponsors', sponsors);
           resolve({ success: true });
-        }
-        if (method === 'PATCH' && action === 'moderate' && id) {
-          const status = body?.status;
-          resources = resources.map((r) =>
-            r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r
-          );
-          setDb('resources', resources);
-          resolve({ success: true, id, status });
         }
       }
 
@@ -996,6 +1019,63 @@ export const api = {
       fetchWithAuth(`/api/admin/circuit-breaker/retry/${encodeURIComponent(name)}`, {
         method: 'POST',
       }),
+  },
+
+  sponsorships: {
+    getAll: () => fetchWithAuth('/api/admin/sponsors'),
+    create: async (sponsor) => {
+      if (auth.isOfflineMode()) {
+        eventEmitter.emit(EVENTS.NOTIFY, {
+          type: 'warning',
+          message: 'Offline — changes not saved to server',
+        });
+      }
+      const result = await fetchWithAuth('/api/admin/sponsors', {
+        method: 'POST',
+        body: JSON.stringify(sponsor),
+      });
+      eventEmitter.emit(EVENTS.SPONSOR_CREATED, result);
+      eventEmitter.emit(EVENTS.NOTIFY, {
+        type: 'success',
+        message: 'Sponsor added',
+      });
+      broadcastContentUpdate('sponsors');
+      return result;
+    },
+    update: async (id, sponsor) => {
+      if (auth.isOfflineMode()) {
+        eventEmitter.emit(EVENTS.NOTIFY, {
+          type: 'warning',
+          message: 'Offline — changes not saved to server',
+        });
+      }
+      const result = await fetchWithAuth(`/api/admin/sponsors/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(sponsor),
+      });
+      eventEmitter.emit(EVENTS.SPONSOR_UPDATED, result);
+      eventEmitter.emit(EVENTS.NOTIFY, {
+        type: 'success',
+        message: 'Sponsor updated',
+      });
+      broadcastContentUpdate('sponsors');
+      return result;
+    },
+    delete: async (id) => {
+      if (auth.isOfflineMode()) {
+        eventEmitter.emit(EVENTS.NOTIFY, {
+          type: 'warning',
+          message: 'Offline — changes not saved to server',
+        });
+      }
+      await fetchWithAuth(`/api/admin/sponsors/${id}`, { method: 'DELETE' });
+      eventEmitter.emit(EVENTS.SPONSOR_DELETED, { id });
+      eventEmitter.emit(EVENTS.NOTIFY, {
+        type: 'success',
+        message: 'Sponsor deleted',
+      });
+      broadcastContentUpdate('sponsors');
+    },
   },
 
   forum: {
