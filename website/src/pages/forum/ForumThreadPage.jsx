@@ -7,6 +7,7 @@ import { EmptyState } from '../../components/EmptyState';
 
 export default function ForumThreadPage({ onBack }) {
   const { id } = useParams();
+  const threadIdNum = parseInt(id, 10);
   const navigate = useNavigate();
   const [thread, setThread] = useState(null);
   const [replies, setReplies] = useState([]);
@@ -20,9 +21,9 @@ export default function ForumThreadPage({ onBack }) {
   useEffect(() => {
     const base = getApiBase();
     if (!base) {
-      const t = fallbackThreads.find((th) => th.id === parseInt(id, 10));
+      const t = fallbackThreads.find((th) => th.id === threadIdNum);
       setThread(t || null);
-      setReplies(fallbackReplies.filter((r) => r.threadId === parseInt(id, 10)));
+      setReplies(fallbackReplies.filter((r) => r.threadId === threadIdNum));
       setLoading(false);
       return;
     }
@@ -32,7 +33,7 @@ export default function ForumThreadPage({ onBack }) {
         if (data?.replies) setReplies(data.replies);
       })
       .catch(() => {
-        const t = fallbackThreads.find((th) => th.id === parseInt(id, 10));
+        const t = fallbackThreads.find((th) => th.id === threadIdNum);
         setThread(t || null);
       })
       .finally(() => setLoading(false));
