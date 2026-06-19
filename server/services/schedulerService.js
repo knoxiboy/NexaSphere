@@ -115,7 +115,8 @@ const TASK_DEFINITIONS = [
   {
     id: 'database-backup-incremental',
     name: 'Database Backup (Incremental)',
-    description: 'Creates and uploads an incremental database backup (changes since last backup) to S3',
+    description:
+      'Creates and uploads an incremental database backup (changes since last backup) to S3',
     cron: '0 */6 * * *', // Every 6 hours
     category: 'system',
     enabled: true,
@@ -334,7 +335,9 @@ class SchedulerService extends EventEmitter {
       const { rows: users } = await client.query(
         `SELECT id, email, full_name FROM student_users WHERE last_login_at > NOW() - INTERVAL '7 days'`
       );
-      logger.info(`[Scheduler] Email digest: ${events.length} recent events, ${users.length} active users`);
+      logger.info(
+        `[Scheduler] Email digest: ${events.length} recent events, ${users.length} active users`
+      );
     });
   }
 
@@ -444,9 +447,7 @@ class SchedulerService extends EventEmitter {
       const { rows: totalUsers } = await client.query(
         'SELECT COUNT(*) as count FROM student_users'
       );
-      const { rows: totalEvents } = await client.query(
-        'SELECT COUNT(*) as count FROM events'
-      );
+      const { rows: totalEvents } = await client.query('SELECT COUNT(*) as count FROM events');
       logger.info(
         `[Scheduler] Analytics snapshot: ${totalUsers[0]?.count || 0} users, ${totalEvents[0]?.count || 0} events`
       );

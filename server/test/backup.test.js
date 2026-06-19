@@ -110,8 +110,8 @@ test('Data Backup & Disaster Recovery Tests', async (t) => {
     const history = await backupService.getBackupHistory();
     assert.equal(history.length, 2);
 
-    const fullBackup = history.find(b => b.type === 'full');
-    const incBackup = history.find(b => b.type === 'incremental');
+    const fullBackup = history.find((b) => b.type === 'full');
+    const incBackup = history.find((b) => b.type === 'incremental');
 
     assert.ok(fullBackup);
     assert.ok(incBackup);
@@ -122,26 +122,29 @@ test('Data Backup & Disaster Recovery Tests', async (t) => {
     assert.equal(stats.storageType, 'Local File Redundancy');
   });
 
-  await t.test('immutability policy blocks deletion of backups within retention window', async () => {
-    const key = await backupService.performBackup('full');
-    
-    // Attempting to delete a newly created backup file should throw an error due to immutability
-    await assert.rejects(
-      async () => {
-        await backupService.deleteBackupFile(key);
-      },
-      (err) => {
-        return err.message.includes('immutable');
-      }
-    );
-  });
+  await t.test(
+    'immutability policy blocks deletion of backups within retention window',
+    async () => {
+      const key = await backupService.performBackup('full');
+
+      // Attempting to delete a newly created backup file should throw an error due to immutability
+      await assert.rejects(
+        async () => {
+          await backupService.deleteBackupFile(key);
+        },
+        (err) => {
+          return err.message.includes('immutable');
+        }
+      );
+    }
+  );
 
   await t.test('automated recovery verification tests run successfully', async () => {
     await backupService.performBackup('full');
-    
+
     // Perform automated recovery verification test
     await backupService.runAutomatedRecoveryTest();
-    
+
     const logs = await backupService.getRecoveryTestHistory();
     assert.ok(logs.length > 0);
     assert.equal(logs[0].restore_type, 'automated_test');
