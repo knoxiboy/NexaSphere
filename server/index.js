@@ -26,9 +26,10 @@ import formsRouter from './routes/forms.js';
 import portfolioRouter from './routes/portfolio.js';
 import notificationsRouter from './routes/notifications.js';
 import adminRouter from './routes/admin.js';
+import loggingRouter from './routes/logging.js';
 import { validateEnvironment } from './utils/envValidator.js';
 import { performanceMonitor } from './middleware/performanceMonitor.js';
-import { tracingMiddleware } from './middleware/tracingMiddleware.js';
+import { enhancedTracingMiddleware } from './middleware/enhancedTracingMiddleware.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { initializeSentry, addSentryErrorHandler } from './utils/sentry.js';
 import {
@@ -272,7 +273,7 @@ app.use(
 );
 app.options('*', cors());
 
-app.use(tracingMiddleware);
+app.use(enhancedTracingMiddleware);
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -323,6 +324,7 @@ app.use('/api', formsRouter);
 app.use('/api', portfolioRouter);
 app.use('/api', notificationsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/admin/logging', loggingRouter);
 app.use('/', syncRouter);
 
 const adminAuth = [apiRateLimiter, adminAuthMiddleware.requireAdmin];
