@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import apiClient from '../../utils/apiClient.js';
 import { getApiBase } from '../../utils/runtimeConfig';
 import { projectsData } from '../../data/projectsData';
@@ -83,15 +83,23 @@ export default function PortfolioBuilder() {
     title: p.title,
   }));
 
-  // Fetch initial config if username changes
+  const loadControllerRef = useRef(null);
+
   const handleLoadConfig = async () => {
     if (!username || username.length < 3) return;
     setErrorMsg('');
     setSuccessMsg('');
+
+    if (loadControllerRef.current) {
+      loadControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    loadControllerRef.current = controller;
+
     try {
       const base = getApiBase();
       const url = base ? `${base}/api/portfolio/${username}` : `/api/portfolio/${username}`;
-      const data = await apiClient(url);
+      const data = await apiClient(url, { signal: controller.signal });
       if (data) {
         setTitle(data.title || '');
         setBio(data.bio || '');
@@ -116,7 +124,13 @@ export default function PortfolioBuilder() {
         setSuccessMsg('Existing portfolio configuration found and loaded!');
       }
     } catch (err) {
-      // Portfolio doesn't exist yet, ignore
+      if (err.name === 'AbortError') return;
+      if (err.status === 404) {
+        return;
+      }
+      setErrorMsg(
+        err.message || 'Failed to load portfolio. Please check your connection and try again.'
+      );
     }
   };
 
@@ -188,10 +202,12 @@ export default function PortfolioBuilder() {
     );
   };
 
+  const ghControllerRef = useRef(null);
+
   const fetchGithubRepos = async () => {
     if (!ghUsername) return;
+    if (isFetchingGh) return;
 
-    // Validate username format before firing the request
     const validUsername = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(
       ghUsername.trim()
     );
@@ -202,16 +218,21 @@ export default function PortfolioBuilder() {
       return;
     }
 
+    if (ghControllerRef.current) {
+      ghControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    ghControllerRef.current = controller;
+
     setIsFetchingGh(true);
     setGhError('');
     try {
       const response = await fetch(
-        `https://api.github.com/users/${ghUsername.trim()}/repos?sort=updated&per_page=30`
+        `https://api.github.com/users/${ghUsername.trim()}/repos?sort=updated&per_page=30`,
+        { signal: controller.signal }
       );
 
       if (response.status === 403 || response.status === 429) {
-        // GitHub unauthenticated rate limit is 60 req/hr per IP.
-        // On shared networks (campus WiFi) this is exhausted quickly.
         const resetHeader = response.headers.get('X-RateLimit-Reset');
         const resetTime = resetHeader
           ? new Date(parseInt(resetHeader, 10) * 1000).toLocaleTimeString()
@@ -237,6 +258,7 @@ export default function PortfolioBuilder() {
       const data = await response.json();
       setGhRepos(data);
     } catch (err) {
+      if (err.name === 'AbortError') return;
       setGhError('Failed to fetch repositories. Please check your connection and try again.');
     } finally {
       setIsFetchingGh(false);
@@ -270,13 +292,37 @@ export default function PortfolioBuilder() {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard
-      .writeText(getPortfolioUrl())
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      .catch(() => {});
+    const url = getPortfolioUrl();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(
+        () => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        },
+        () => {
+          fallbackCopy(url);
+        }
+      );
+    } else {
+      fallbackCopy(url);
+    }
+  };
+
+  const fallbackCopy = (text) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setErrorMsg('Unable to copy link. Please copy it manually from the address bar.');
+    }
+    document.body.removeChild(textarea);
   };
 
   return (
