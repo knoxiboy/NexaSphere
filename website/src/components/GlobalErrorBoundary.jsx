@@ -3,11 +3,16 @@ import * as Sentry from '@sentry/react';
 import './GlobalErrorBoundary.css';
 
 const FallbackUI = ({ error }) => {
+  const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+
   return (
     <div className="global-error-boundary" role="alert">
       <div className="global-error-content">
         <h1>Something went wrong. Please reload the page.</h1>
-        {error && (
+
+        {/* Error details are shown in development only to avoid leaking
+            stack traces and internal paths to end users in production. */}
+        {error && isDev && (
           <pre
             style={{
               background: 'rgba(255,0,0,0.07)',
@@ -30,6 +35,7 @@ const FallbackUI = ({ error }) => {
             {error.stack}
           </pre>
         )}
+
         <button
           onClick={() => window.location.reload()}
           aria-label="Reload the page"
