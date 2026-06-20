@@ -10,10 +10,7 @@ import { getApiBase } from '../../utils/runtimeConfig';
 export default function AdminPage({ onBack }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  // Derive initial auth state from token presence rather than a spoofable
-  // boolean flag — the token is validated server-side on the first API call.
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('ns_admin_token'));
-  const [token, setToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [data, setData] = useState({
     stats: null,
@@ -25,13 +22,12 @@ export default function AdminPage({ onBack }) {
     try {
       setLoading(true);
       const base = getApiBase();
-      const authToken = token || localStorage.getItem('ns_admin_token');
-      const headers = { Authorization: `Bearer ${authToken}` };
+      const opts = { credentials: 'include' };
 
       const [stats, growth, events] = await Promise.all([
-        apiClient(`${base}/api/admin/analytics/stats`, { headers }),
-        apiClient(`${base}/api/admin/analytics/growth`, { headers }),
-        apiClient(`${base}/api/admin/analytics/events`, { headers }),
+        apiClient(`${base}/api/admin/analytics/stats`, opts),
+        apiClient(`${base}/api/admin/analytics/growth`, opts),
+        apiClient(`${base}/api/admin/analytics/events`, opts),
       ]);
 
       setData({ stats, growth, events });
@@ -73,7 +69,6 @@ export default function AdminPage({ onBack }) {
         if (!response.ok) {
           if (response.status === 401) {
             setIsLoggedIn(false);
-            localStorage.removeItem('ns_admin_token');
             return;
           }
           throw new Error(`SSE connection failed: ${response.status}`);
@@ -106,7 +101,9 @@ export default function AdminPage({ onBack }) {
           }
         }
       } catch (err) {
-        console.warn('Admin SSE metrics stream connection interrupted or reconnecting...', err);
+        if (import.meta.env.DEV) {
+          console.warn('[AdminPage] SSE metrics stream interrupted or reconnecting:', err.message);
+        }
       }
 
       // Re-check closed after await — if component unmounted while fetch
@@ -165,7 +162,9 @@ export default function AdminPage({ onBack }) {
           };
         });
       } catch (err) {
-        console.error('Failed to parse registration SSE message:', err);
+        if (import.meta.env.DEV) {
+          console.error('[AdminPage] Failed to parse registration SSE message:', err.message);
+        }
       }
     });
 
@@ -173,7 +172,9 @@ export default function AdminPage({ onBack }) {
       try {
         JSON.parse(event.data);
       } catch (err) {
-        console.error('Failed to parse login SSE message:', err);
+        if (import.meta.env.DEV) {
+          console.error('[AdminPage] Failed to parse login SSE message:', err.message);
+        }
       }
     });
 
@@ -196,10 +197,6 @@ export default function AdminPage({ onBack }) {
         credentials: 'include',
       });
 
-      if (result.token) {
-        localStorage.setItem('ns_admin_token', result.token);
-        setToken(result.token);
-      }
       setIsLoggedIn(true);
       setError(null);
     } catch (err) {
@@ -217,9 +214,10 @@ export default function AdminPage({ onBack }) {
         credentials: 'include',
       });
     } catch (err) {
-      console.error(err);
+      if (import.meta.env.DEV) {
+        console.error('[AdminPage] Logout error:', err.message);
+      }
     }
-    localStorage.removeItem('ns_admin_token');
     setIsLoggedIn(false);
     setData({ stats: null, growth: [], events: [] });
     socketClient.destroySocket();
