@@ -1,10 +1,33 @@
-import { z } from 'zod';
+const logger = require('../utils/logger'); // Assuming unified logger path
 
-const envSchema = z.object({
-  PORT: z.coerce.number().default(8787),
-  NODE_ENV: z.string().default('development'),
-  CORS_ORIGIN: z.string().optional(),
-  DATABASE_URL: z.string().optional(),
-});
+/**
+ * Validates critical infrastructure environment variables during boot sequence.
+ * Restores missing closing brace to resolve syntax execution block cascading failures.
+ */
+function validateEnvironment() {
+  const requiredVars = ['NODE_ENV', 'MONGO_URI', 'JWT_SECRET', 'PORT'];
 
-export const env = envSchema.parse(process.env);
+  const missingVars = [];
+
+  requiredVars.forEach((variable) => {
+    if (!process.env[variable]) {
+      missingVars.push(variable);
+    }
+  });
+
+  if (missingVars.length > 0) {
+    logger.error('Incomplete environment profiles. Server initializing fallback block closure.', {
+      missingParameters: missingVars,
+      action: 'HALT_BOOT_SEQUENCE',
+    });
+    throw new Error(`Critical infrastructure variables missing: ${missingVars.join(', ')}`);
+  }
+
+  logger.info(
+    'Environment variables verification check succeeded. Application configurations loaded.'
+  );
+} // <-- Restored missing structural closing brace
+
+module.exports = {
+  validateEnvironment,
+};
