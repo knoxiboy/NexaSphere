@@ -29,6 +29,7 @@ import './styles/aurora.css';
 import './styles/motion.css';
 
 import SearchBar from './components/SearchBar';
+import PersonalizedFeed from './components/recommendation/PersonalizedFeed';
 import './i18n';
 import FloatingDock from './components/common/FloatingDock';
 import ParticleBackground from './shared/ParticleBackground';
@@ -797,6 +798,8 @@ function MainRouter({
                     <SectionDivider />
                     <ActivitiesSection onNavigate={onNavigate} />
                     <SectionDivider />
+                    <RecommendationSection events={eventsData} onEventClick={onKSSClick} />
+                    <SectionDivider />
                     <EventsSection onEventClick={onKSSClick} events={eventsData} />
                     <SectionDivider />
                     <AboutSection />
@@ -1420,6 +1423,56 @@ function EventPlanningWrapper({ onBack }) {
     <PageIn k={`event-planning-${eventId}`}>
       <EventPlanningPage event={{ id: eventId, eventId }} onBack={onBack} />
     </PageIn>
+  );
+}
+
+/* Local recommendations hook — scores events by upcoming status & recency */
+function useRecommendationsLocal(events) {
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const scored = [...events]
+        .map((ev) => ({
+          ...ev,
+          hasDetailPage: !!ev.hasDetailPage,
+          dateText: ev.dateText || ev.date || '',
+        }))
+        .filter((ev) => ev.status !== 'completed')
+        .slice(0, 6);
+      setRecommendations(scored.length ? scored : events.slice(0, 6));
+      setLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [events]);
+  return { recommendations, loading };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RecommendationSection — "Recommended For You" on home page
+───────────────────────────────────────────────────────────────── */
+function RecommendationSection({ events = [], onEventClick }) {
+  const { recommendations, loading } = useRecommendationsLocal(events);
+  return (
+    <section id="section-recommendations" style={{ padding: '80px 0', position: 'relative' }}>
+      <div className="container">
+        <div style={{ marginBottom: 32 }}>
+          <span className="cin-section-label" style={{ display: 'block', marginBottom: 8 }}>
+            AI-Powered · Personalised
+          </span>
+          <h2
+            className="section-title"
+            style={{ fontSize: 'clamp(1.6rem,4vw,2.4rem)', marginBottom: 8 }}
+          >
+            Recommended For You
+          </h2>
+          <p className="section-subtitle" style={{ maxWidth: 500 }}>
+            Events and activities picked just for you based on what&apos;s trending in NexaSphere.
+          </p>
+        </div>
+        <PersonalizedFeed events={recommendations} loading={loading} onEventClick={onEventClick} />
+      </div>
+    </section>
   );
 }
 
