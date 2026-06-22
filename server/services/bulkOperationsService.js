@@ -5,6 +5,7 @@ import { auditLogRepository } from '../repositories/auditLogRepository.js';
 import { parseCSV, generateCSV } from '../utils/csvParser.js';
 import { sendEmail } from './emailService.js';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 class BulkOperationsService {
   constructor() {
@@ -155,12 +156,15 @@ class BulkOperationsService {
                 data: updatedRows[0],
               });
             } else {
-              // Create new user
+              // Create new user with password
               const id = `user-${crypto.randomUUID()}`;
               const updatedTags = JSON.stringify(user.tags);
+              const plainPassword = crypto.randomBytes(4).toString('hex'); // 8 char temp password
+              const passwordHash = await bcrypt.hash(plainPassword, 10);
+              
               const { rows: insertedRows } = await client.query(
-                `INSERT INTO users (id, username, display_name, email, role, admin_roles, status, major, year, tags, created_at, updated_at)
-                 VALUES ($1, $2, $3, $4, $5, $5, $6, $7, $8, $9, NOW(), NOW()) RETURNING *`,
+                `INSERT INTO users (id, username, display_name, email, role, admin_roles, status, major, year, tags, password_hash, created_at, updated_at)
+                 VALUES ($1, $2, $3, $4, $5, $5, $6, $7, $8, $9, $10, NOW(), NOW()) RETURNING *`,
                 [
                   id,
                   user.username,
@@ -171,8 +175,25 @@ class BulkOperationsService {
                   user.major || null,
                   user.year || null,
                   updatedTags,
+                  passwordHash,
                 ]
               );
+              
+              // Email the user their temporary password
+              try {
+                await sendEmail({
+                  to: user.email,
+                  subject: 'Welcome to NexaSphere!',
+                  templateName: 'generic',
+                  data: {
+                    name: user.display_name || 'Student',
+                    message: `Your account has been created. You can log in using your email and this temporary password: ${plainPassword} \nPlease change it after your first login.`,
+                  },
+                });
+              } catch (emailErr) {
+                console.error(`Failed to send welcome email to ${user.email}:`, emailErr.message);
+              }
+              
               oldState.push({ type: 'insert', table: 'users', key: id, data: null });
               newState.push({ type: 'insert', table: 'users', key: id, data: insertedRows[0] });
             }

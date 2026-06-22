@@ -19,6 +19,7 @@ import { waitingRoomService } from '../services/waitingRoomService.js';
 import * as sponsorshipsController from '../controllers/sponsorshipsController.js';
 import { achievementSchema } from '../validators/portfolioSchemas.js';
 import { auditLogRepository } from '../repositories/auditLogRepository.js';
+import * as localAuthController from '../controllers/localAuthController.js';
 
 import * as recommendationsController from '../controllers/recommendationsController.js';
 import * as gamificationController from '../controllers/gamificationController.js';
@@ -111,6 +112,10 @@ router.delete(
   usersController.adminDeactivateUser
 );
 router.post('/api/admin/login', authRateLimiter, adminAuthMiddleware.login);
+
+// Local User Auth
+router.post('/api/auth/local/login', authRateLimiter, localAuthController.localLogin);
+
 router.post('/api/admin/2fa/verify', authRateLimiter, adminAuthMiddleware.verifyTwoFactor);
 router.post(
   '/api/admin/2fa/setup/verify',
