@@ -358,26 +358,38 @@ export const emailCampaignRepository = {
   // --- Segmentation ---
   async getSegmentUsers(criteria) {
     return withDb(async (client) => {
-      let query = 'SELECT id, email, full_name FROM student_users WHERE 1=1';
+      let query = 'SELECT DISTINCT s.id, s.email, s.full_name FROM student_users s';
       const params = [];
+      
+      let joinCount = 0;
+      if (criteria.groupId) {
+        query += ` JOIN user_group_members ugm ON s.id = ugm.student_id`;
+      }
+      
+      query += ' WHERE 1=1';
+
+      if (criteria.groupId) {
+        query += ` AND ugm.group_id = $${params.length + 1}`;
+        params.push(criteria.groupId);
+      }
 
       if (criteria.activityLevel) {
-        query += ` AND activity_level = $${params.length + 1}`;
+        query += ` AND s.activity_level = $${params.length + 1}`;
         params.push(criteria.activityLevel);
       }
 
       if (criteria.graduationYear) {
-        query += ` AND graduation_year = $${params.length + 1}`;
+        query += ` AND s.graduation_year = $${params.length + 1}`;
         params.push(criteria.graduationYear);
       }
 
       if (criteria.interests && criteria.interests.length > 0) {
-        query += ` AND interests && $${params.length + 1}`;
+        query += ` AND s.interests && $${params.length + 1}`;
         params.push(criteria.interests);
       }
 
       if (criteria.excludeUnsubscribed) {
-        query += ` AND email NOT IN (SELECT email FROM email_unsubscribes)`;
+        query += ` AND s.email NOT IN (SELECT email FROM email_unsubscribes)`;
       }
 
       const { rows } = await client.query(query, params);
