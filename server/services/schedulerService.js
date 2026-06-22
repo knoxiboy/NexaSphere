@@ -13,6 +13,7 @@ import notificationsService from './notificationsService.js';
 import { withDb } from '../repositories/db.js';
 import { HAS_SUPABASE } from '../storage/supabaseClient.js';
 import { backupService } from './backupService.js';
+import { segmentationService } from './segmentationService.js';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -152,6 +153,14 @@ const TASK_DEFINITIONS = [
     description: 'Generates weekly activity and membership reports',
     cron: '0 9 * * 1', // Mondays at 09:00
     category: 'reports',
+    enabled: true,
+  },
+  {
+    id: 'auto-user-segmentation',
+    name: 'Auto User Segmentation',
+    description: 'Updates user activity levels based on engagement for targeting',
+    cron: '0 0 * * *', // Daily at midnight
+    category: 'users',
     enabled: true,
   },
   {
@@ -312,6 +321,9 @@ class SchedulerService extends EventEmitter {
         break;
       case 'report-generation':
         await this._generateReports();
+        break;
+      case 'auto-user-segmentation':
+        await segmentationService.runAutoSegmentation();
         break;
       case 'inactive-user-check':
         await this._flagInactiveUsers();

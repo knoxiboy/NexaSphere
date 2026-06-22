@@ -24,6 +24,7 @@ import documentationRouter from './routes/documentation.js';
 import monitoringRouter from './routes/monitoring.js';
 import healthRouter from './routes/health.js';
 import coreTeamRouter from './routes/coreTeam.js';
+import segmentsRouter from './routes/segments.js';
 import formsRouter from './routes/forms.js';
 import portfolioRouter from './routes/portfolio.js';
 import portfolioExportRouter from './routes/portfolioExport.js';
@@ -375,6 +376,9 @@ const adminAuth = [apiRateLimiter, adminAuthMiddleware.requireAdmin];
 // Scheduled Tasks Management
 app.use('/api/admin/scheduled-tasks', adminAuth, scheduledTasksRouter);
 
+// User Segments
+app.use('/api/admin/segments', adminAuth, segmentsRouter);
+
 // Database Backup & Recovery Endpoints
 app.get('/api/admin/backups', adminAuth, backupController.getBackups);
 app.post('/api/admin/backups/manual', adminAuth, backupController.runManualBackup);
@@ -443,10 +447,18 @@ const MAGIC_BYTES = {
   'image/jpeg': [[0xff, 0xd8, 0xff]],
   'image/gif': [[0x47, 0x49, 0x46]],
   'image/webp': [[0x52, 0x49, 0x46, 0x46]],
-  'application/zip': [[0x50, 0x4b, 0x03, 0x04], [0x50, 0x4b, 0x05, 0x06], [0x50, 0x4b, 0x07, 0x08]],
+  'application/zip': [
+    [0x50, 0x4b, 0x03, 0x04],
+    [0x50, 0x4b, 0x05, 0x06],
+    [0x50, 0x4b, 0x07, 0x08],
+  ],
   'application/x-zip-compressed': [[0x50, 0x4b, 0x03, 0x04]],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [[0x50, 0x4b, 0x03, 0x04]],
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': [[0x50, 0x4b, 0x03, 0x04]],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
+    [0x50, 0x4b, 0x03, 0x04],
+  ],
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': [
+    [0x50, 0x4b, 0x03, 0x04],
+  ],
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [[0x50, 0x4b, 0x03, 0x04]],
   'text/plain': [],
   'text/markdown': [],
@@ -542,7 +554,6 @@ function withContentLock(fn) {
   return current.then(() => fn()).finally(() => release());
 }
 
-export async function supabaseRequest(pathname, { method = 'GET', body } = {}) {
 const _rawSupabaseRequest = async function _rawSupabaseRequest(
   pathname,
   { method = 'GET', body } = {}
@@ -725,9 +736,23 @@ async function listEventsStore({ page = 1, limit = 20 } = {}) {
 }
 
 const ALLOWED_EVENT_FIELDS = [
-  'id', 'name', 'description', 'date_text', 'time', 'location',
-  'type', 'mode', 'category', 'tags', 'image_url', 'registration_link',
-  'capacity', 'registered_count', 'price', 'created_at', 'updated_at',
+  'id',
+  'name',
+  'description',
+  'date_text',
+  'time',
+  'location',
+  'type',
+  'mode',
+  'category',
+  'tags',
+  'image_url',
+  'registration_link',
+  'capacity',
+  'registered_count',
+  'price',
+  'created_at',
+  'updated_at',
 ];
 
 function sanitizeEventRecord(event) {
@@ -974,8 +999,17 @@ async function listCoreTeamStore() {
 }
 
 const ALLOWED_TEAM_MEMBER_FIELDS = [
-  'id', 'name', 'role', 'position', 'bio', 'avatar_url',
-  'github_url', 'linkedin_url', 'email', 'joined_at', 'order',
+  'id',
+  'name',
+  'role',
+  'position',
+  'bio',
+  'avatar_url',
+  'github_url',
+  'linkedin_url',
+  'email',
+  'joined_at',
+  'order',
 ];
 
 function sanitizeCoreTeamMemberRecord(member) {
@@ -1651,7 +1685,7 @@ if (process.env.NODE_ENV !== 'test') {
       server = app.listen(port, () => {
         console.log(`NexaSphere server listening on http://localhost:${port}`);
         schedulerService.init();
-        
+
         // Register Learning Path Nudges (Runs daily)
         schedulerService.schedule('0 10 * * *', async () => {
           await learningPathService.runNudgeJob();

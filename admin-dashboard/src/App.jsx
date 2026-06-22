@@ -20,6 +20,9 @@ import { PortfolioManager } from './pages/PortfolioManager';
 import { StreamManager } from './pages/StreamManager';
 import { CircuitBreakerManager } from './pages/CircuitBreakerManager';
 import { WaitingRoomManager } from './pages/WaitingRoomManager';
+import { SponsorshipsManager } from './pages/SponsorshipsManager';
+import { ComprehensiveAnalytics } from './pages/ComprehensiveAnalytics';
+import { UserSegmentation } from './pages/UserSegmentation';
 import './styles/admin.css';
 
 function RequireAuth() {
@@ -65,6 +68,7 @@ export default function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHome />} />
             <Route path="/dashboard/analytics" element={<ComprehensiveAnalytics />} />
+            <Route path="/dashboard/segments" element={<UserSegmentation />} />
             <Route path="/dashboard/events" element={<EventsManager />} />
             <Route path="/dashboard/activity-events" element={<ActivityEventsManager />} />
             <Route path="/dashboard/core-team" element={<CoreTeamManager />} />
