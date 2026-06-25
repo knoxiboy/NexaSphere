@@ -81,7 +81,6 @@ import { slackRepository } from './repositories/slackRepository.js';
 import * as studentAuthController from './controllers/studentAuthController.js';
 import * as forumController from './controllers/forumController.js';
 import { requireStudentAuth } from './middleware/studentAuthMiddleware.js';
-import { studentAuthService } from './services/studentAuthService.js';
 import { loadPersistedPushSubscriptions } from './routes/notifications.js';
 import * as mentorshipController from './controllers/mentorshipController.js';
 import { xssSanitizer } from './middleware/xssSanitizer.js';
@@ -206,7 +205,13 @@ app.use(
 
         mediaSrc: ["'self'"],
 
-        frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'],
+        frameSrc: [
+          "'self'",
+          'https://challenges.cloudflare.com',
+          'https://maps.google.com',
+          'https://www.google.com',
+          'https://www.google.co.in',
+        ],
 
         childSrc: ["'none'"],
 
@@ -248,6 +253,9 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
       if (origin && allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -302,7 +310,6 @@ app.use('/api', apiRateLimiter);
 app.use('/api', tierRateLimiter());
 
 // Mount route modules
-app.use('/api/form-submissions', formSubmissionsRouter);
 app.post('/api/analytics/track', logEvent);
 app.use('/api/monitoring', monitoringRouter);
 app.use('/api/health-dashboard', healthDashboardRouter);
@@ -310,6 +317,7 @@ app.use('/api', documentationRouter);
 app.use('/', apiRouter);
 app.use('/', healthRouter);
 app.use('/', coreTeamRouter);
+app.use('/', announcementsRouter);
 app.use('/api', formsRouter);
 app.use('/api', portfolioRouter);
 app.use('/api', timelineRouter);
@@ -1117,6 +1125,9 @@ function clearActivityAuthAttempts(ip) {
 // Compliance & Legal Documents (handles both public and admin routes internally)
 app.use('/api/compliance', complianceRouter);
 
+// Compliance & Accessibility Audit Tools (#1801)
+app.use('/api', auditToolsRouter);
+
 // Admin Analytics & Metrics (mounted with admin auth)
 app.use('/api/admin/analytics', adminAuth, analyticsRouter);
 app.use('/api/admin/metrics', adminAuth, adminStreamRouter);
@@ -1426,11 +1437,14 @@ function requireNotificationPrefAuth(req, res, next) {
       if (err2 || !req.studentUser) {
         return res.status(401).json({ error: 'Unauthorized: Authentication required' });
       }
-      const userId = req.method === 'GET' ? (req.query.userId || 'global') : (req.body.userId || 'global');
+      const userId =
+        req.method === 'GET' ? req.query.userId || 'global' : req.body.userId || 'global';
       if (req.studentUser.sub === userId || req.studentUser.id === userId) {
         return next();
       }
-      return res.status(403).json({ error: 'Forbidden: You cannot access or modify other users\' preferences' });
+      return res
+        .status(403)
+        .json({ error: "Forbidden: You cannot access or modify other users' preferences" });
     });
   });
 }
@@ -1605,8 +1619,16 @@ app.put(
   requireMentorshipAuth,
   mentorshipController.updateMentorshipStatus
 );
-app.post('/api/mentorship/requests/:id/sessions', requireStudentAuth, mentorshipController.logSession);
-app.get('/api/mentorship/requests/:id/sessions', requireStudentAuth, mentorshipController.listSessions);
+app.post(
+  '/api/mentorship/requests/:id/sessions',
+  requireStudentAuth,
+  mentorshipController.logSession
+);
+app.get(
+  '/api/mentorship/requests/:id/sessions',
+  requireStudentAuth,
+  mentorshipController.listSessions
+);
 app.post('/api/mentorship/buddy-pairs', requireStudentAuth, mentorshipController.createBuddyPair);
 app.get('/api/mentorship/buddy-pairs', requireStudentAuth, mentorshipController.listBuddyPairs);
 app.get('/api/admin/mentorships', adminAuth, mentorshipController.adminListAll);
