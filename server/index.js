@@ -1,3 +1,4 @@
+import { runWithFileLock } from './storage/contentFileStore.js';
 import 'dotenv/config';
 import { tracedFetch } from './config/appContext.js';
 import { initObservability } from './observability/index.js';
@@ -485,11 +486,6 @@ async function ensureContentFile() {
     await fsp.writeFile(CONTENT_FILE, JSON.stringify(defaultContent, null, 2), 'utf8');
   }
 }
-const fileMutex = new Mutex();
-
-export async function runWithFileLock(callback) {
-  return await fileMutex.runExclusive(callback);
-}
 
 async function readContent() {
   await ensureContentFile();
@@ -502,17 +498,7 @@ async function writeContent(content) {
   await fsp.writeFile(CONTENT_FILE, JSON.stringify(content, null, 2), 'utf8');
 }
 
-let contentLock = Promise.resolve();
 
-function withContentLock(fn) {
-  let release;
-  const next = new Promise((resolve) => {
-    release = resolve;
-  });
-  const current = contentLock;
-  contentLock = next;
-  return current.then(() => fn()).finally(() => release());
-}
 
 const _rawSupabaseRequest = async function _rawSupabaseRequest(
   pathname,
@@ -766,7 +752,7 @@ async function createEventStore(event) {
   }
 
   // Safe atomic fallback operation preventing data loss using async-mutex
-  return withContentLock(async () => {
+  return runWithFileLock(async () => {
     const content = await readContent();
     content.events.unshift({
       ...event,
@@ -806,7 +792,7 @@ async function updateEventStore(id, patch) {
       updatedAt: row.updated_at,
     });
   }
-  return withContentLock(async () => {
+  return runWithFileLock(async () => {
     const content = await readContent();
     const idx = content.events.findIndex((e) => e.id === id);
     if (idx < 0) return null;
@@ -828,7 +814,7 @@ async function deleteEventStore(id) {
     });
     return Array.isArray(rows) && rows.length > 0;
   }
-  return withContentLock(async () => {
+  return runWithFileLock(async () => {
     const content = await readContent();
     const before = content.events.length;
     content.events = content.events.filter((e) => e.id !== id);
@@ -904,7 +890,7 @@ async function createActivityEventStore(activityKey, event) {
       createdAt: row.created_at,
     });
   }
-  return withContentLock(async () => {
+  return runWithFileLock(async () => {
     const content = await readContent();
     content.activityEvents = content.activityEvents || {};
     content.activityEvents[activityKey] = content.activityEvents[activityKey] || [];
@@ -922,7 +908,7 @@ async function deleteActivityEventStore(activityKey, eventId) {
     );
     return Array.isArray(rows) && rows.length > 0;
   }
-  return withContentLock(async () => {
+  return runWithFileLock(async () => {
     const content = await readContent();
     content.activityEvents = content.activityEvents || {};
     const list = content.activityEvents[activityKey] || [];
@@ -1015,7 +1001,7 @@ async function createCoreTeamStore(member) {
       createdAt: row.created_at,
     });
   }
-  return withContentLock(async () => {
+  return runWithFileLock(async () => {
     const content = await readContent();
     content.coreTeam = content.coreTeam || [];
     const newMember = {
@@ -1036,7 +1022,7 @@ async function deleteCoreTeamStore(id) {
     });
     return Array.isArray(rows) && rows.length > 0;
   }
-  return withContentLock(async () => {
+  return runWithFileLock(async () => {
     const content = await readContent();
     content.coreTeam = content.coreTeam || [];
     const before = content.coreTeam.length;
