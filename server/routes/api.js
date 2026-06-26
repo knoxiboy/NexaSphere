@@ -1,3 +1,4 @@
+import settingsRouter from './settingsRoutes.js';
 import { auditLogController } from '../controllers/auditLogController.js';
 import * as eventsController from '../controllers/eventsController.js';
 import * as activityEventsController from '../controllers/activityEventsController.js';
@@ -371,6 +372,7 @@ router.get(
     }
   }
 );
+router.use('/api/admin/settings', adminAuthMiddleware.requireAdmin, settingsRouter);
 router.post('/api/admin/impersonate/stop', adminAuthMiddleware.requireAdmin, (req, res) => {
   impersonationService.stop(req.adminSession.token);
   return res.json({ impersonating: false });
@@ -378,9 +380,7 @@ router.post('/api/admin/impersonate/stop', adminAuthMiddleware.requireAdmin, (re
 router.get('/api/admin/impersonate/status', adminAuthMiddleware.requireAdmin, (req, res) => {
   const active = impersonationService.getActive(req.adminSession.token);
   return res.json({ impersonating: !!active, user: active?.targetUser || null });
-});
-
-// Audit Log Viewer APIs
+}); // Audit Log Viewer APIs
 router.get('/api/admin/audit-logs', adminAuthMiddleware.requireAdmin, auditLogController.listLogs);
 
 router.get(

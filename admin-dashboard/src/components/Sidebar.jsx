@@ -117,6 +117,8 @@ const links = [
     to: '/dashboard/reports',
     label: 'Reports',
     icon: 'Target',
+  },
+  {
     to: '/dashboard/settings',
     label: 'Platform Settings',
     icon: 'Settings',
@@ -350,4 +352,3 @@ export function Sidebar() {
     </>
   );
 }
-
