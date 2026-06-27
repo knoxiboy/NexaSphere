@@ -686,4 +686,106 @@
  *       200:
  *         description: Analytics retrieved successfully.
  */
+
+/**
+ * @swagger
+ * /api/admin/event-scheduling/conflicts:
+ *   get:
+ *     summary: Detect event scheduling conflicts
+ *     description: Returns events that overlap in time or venue.
+ *     tags:
+ *       - Event Scheduling
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Conflict list returned successfully.
+ */
+
+/**
+ * @swagger
+ * /api/admin/event-scheduling/venue:
+ *   get:
+ *     summary: Check venue availability
+ *     description: Verify whether a venue is available for a selected date.
+ *     tags:
+ *       - Event Scheduling
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: venue
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Venue availability returned.
+ */
+
+/**
+ * @swagger
+ * /api/admin/event-scheduling/attendance-impact:
+ *   get:
+ *     summary: Attendance impact analysis
+ *     description: Analyze attendance impact caused by conflicting events.
+ *     tags:
+ *       - Event Scheduling
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Attendance analysis generated.
+ */
+
+/**
+ * @swagger
+ * /api/admin/event-scheduling/recommendations:
+ *   get:
+ *     summary: Smart scheduling recommendations
+ *     description: Returns recommended schedules for events.
+ *     tags:
+ *       - Event Scheduling
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Scheduling recommendations returned.
+ */
+
+/**
+ * @swagger
+ * /api/admin/event-scheduling/calendar:
+ *   get:
+ *     summary: Calendar integration
+ *     description: Returns event data formatted for calendar integration.
+ *     tags:
+ *       - Event Scheduling
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Calendar events returned.
+ */
+
+/**
+ * @swagger
+ * /api/admin/event-scheduling/alerts:
+ *   get:
+ *     summary: Organizer alerts
+ *     description: Returns scheduling alerts for organizers.
+ *     tags:
+ *       - Event Scheduling
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Organizer alerts returned successfully.
+ */
 export default {};

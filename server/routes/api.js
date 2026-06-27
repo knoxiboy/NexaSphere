@@ -22,6 +22,7 @@ import * as portfolioAnalyticsController from '../controllers/portfolioAnalytics
 import { achievementSchema } from '../validators/portfolioSchemas.js';
 import { auditLogRepository } from '../repositories/auditLogRepository.js';
 import announcementPriorityRouter from "./announcementPriority.js";
+import eventConflictRouter from "./eventConflict.js";
 
 import * as recommendationsController from '../controllers/recommendationsController.js';
 import * as gamificationController from '../controllers/gamificationController.js';
@@ -402,5 +403,7 @@ router.use(
 "/api/announcements",
 announcementPriorityRouter
 );
+
+router.use("/api/events", eventConflictRouter);
 
 export default router;
