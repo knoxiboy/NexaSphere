@@ -18,6 +18,7 @@ import { portfolioService } from '../services/portfolioService.js';
 import { waitingRoomService } from '../services/waitingRoomService.js';
 import * as sponsorshipsController from '../controllers/sponsorshipsController.js';
 import * as subscriptionsController from '../controllers/subscriptionsController.js';
+import * as portfolioAnalyticsController from '../controllers/portfolioAnalyticsController.js';
 import { achievementSchema } from '../validators/portfolioSchemas.js';
 import { auditLogRepository } from '../repositories/auditLogRepository.js';
 
@@ -291,6 +292,23 @@ router.delete(
       return res.status(500).json({ error: err.message });
     }
   }
+);
+
+// Portfolio Analytics APIs
+
+router.get(
+  '/api/portfolio/:username/analytics',
+  portfolioAnalyticsController.getPortfolioAnalytics
+);
+
+router.post(
+  '/api/portfolio/:username/visit',
+  portfolioAnalyticsController.recordPortfolioVisit
+);
+
+router.get(
+  '/api/portfolio/:username/monthly-report',
+  portfolioAnalyticsController.getMonthlyReport
 );
 
 // Achievement management APIs
