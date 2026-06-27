@@ -889,4 +889,103 @@
  *       200:
  *         description: Registration deadline updated successfully.
  */
+
+/**
+ * @swagger
+ * /api/search:
+ *   get:
+ *     summary: Global Search
+ *     description: Search across events, team members, portfolios, and resources.
+ *     tags:
+ *       - Global Search
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search keyword
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - all
+ *             - events
+ *             - members
+ *             - portfolios
+ *             - resources
+ *         description: Filter search by category
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Maximum results
+ *     responses:
+ *       200:
+ *         description: Search results returned successfully.
+ */
+
+/**
+ * @swagger
+ * /api/search/trending:
+ *   get:
+ *     summary: Trending Searches
+ *     description: Returns the most popular search queries.
+ *     tags:
+ *       - Global Search
+ *     responses:
+ *       200:
+ *         description: Trending searches retrieved successfully.
+ */
+
+/**
+ * @swagger
+ * /api/search/recent:
+ *   get:
+ *     summary: Recent Searches
+ *     description: Returns the user's recent search history.
+ *     tags:
+ *       - Global Search
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Recent searches returned successfully.
+ */
+
+/**
+ * @swagger
+ * /api/search/suggestions:
+ *   get:
+ *     summary: Instant Search Suggestions
+ *     description: Returns autocomplete suggestions while typing.
+ *     tags:
+ *       - Global Search
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Suggestions returned successfully.
+ */
+
+/**
+ * @swagger
+ * /api/admin/search/analytics:
+ *   get:
+ *     summary: Search Analytics Dashboard
+ *     description: Returns analytics about search usage, popular keywords and categories.
+ *     tags:
+ *       - Global Search
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Analytics retrieved successfully.
+ */
 export default {};
