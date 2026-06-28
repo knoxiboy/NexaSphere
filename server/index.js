@@ -52,6 +52,7 @@ import { notificationAnalyticsRepository } from './repositories/notificationAnal
 import { notificationPreferencesRepository } from './repositories/notificationPreferencesRepository.js';
 import notificationsService from './services/notificationsService.js';
 import { studentAuthService } from './services/studentAuthService.js';
+import { slackIntegrationService } from './services/slackIntegrationService.js';
 import { initializeSentry, addSentryErrorHandler } from './utils/sentry.js';
 import {
   apiRateLimiter,
