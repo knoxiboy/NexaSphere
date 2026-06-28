@@ -74,7 +74,6 @@ const pendingTwoFactorChallenges = new Map();
 const PENDING_2FA_TTL_MS = 10 * 60 * 1000;
 
 // RECTIFIED: Use getRedisClient dynamically and support local Map fallback when Redis is offline or not configured
-// (Ensure your project has a centralized redis configuration client available)
 
 function requiredEnv(name) {
   const value = String(process.env[name] || '').trim();
