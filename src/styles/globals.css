@@ -77,6 +77,11 @@ a {
   text-decoration: none;
   cursor: none;
 }
+[data-theme='high-contrast'] a {
+  text-decoration: underline;
+  text-decoration-color: var(--c1);
+  text-underline-offset: 4px;
+}
 img,
 svg {
   display: block;
