@@ -21,7 +21,6 @@ export default function DashboardPage({ onBack }) {
         role: authUser.role || 'student',
       }
     : { id: 'user_123', name: 'Explorer', email: '', role: 'student' };
-
   const [interests, setInterests] = useState([]);
   const [quests, setQuests] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
