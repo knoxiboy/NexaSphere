@@ -164,7 +164,7 @@ app.use(
           }
         : false,
 
-    // Strict Content Security Policy
+    // Strict Content Security Policy with ALL directives
     contentSecurityPolicy: {
       useDefaults: false,
 
@@ -196,23 +196,16 @@ app.use(
 
         objectSrc: ["'none'"],
 
-        baseUri: ["'self'"],
-
-        frameAncestors: ["'none'"],
-
-        formAction: ["'self'"],
-
-        upgradeInsecureRequests: [],
-
-        workerSrc: ["'self'", 'blob:'],
-
-        manifestSrc: ["'self'"],
-
-        mediaSrc: ["'self'"],
-
+        // ✅ CRITICAL FIX: Missing directives added below
+        baseUri: ["'self'"],                                    // Prevents <base> tag injection
+        frameAncestors: ["'none'"],                             // Prevents clickjacking
+        formAction: ["'self'"],                                 // Prevents form submission to external sites
+        workerSrc: ["'self'", 'blob:'],                         // Restricts web worker sources
+        manifestSrc: ["'self'"],                                // Restricts manifest sources
+        mediaSrc: ["'self'"],                                   // Restricts media sources
         frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'],
-
-        childSrc: ["'none'"],
+        childSrc: ["'none'"],                                   // Restricts child browsing contexts
+        upgradeInsecureRequests: [],                            // Upgrades HTTP to HTTPS
 
         reportUri: '/api/v1/csp-violation',
       },
@@ -248,7 +241,6 @@ app.use(
     },
   })
 );
-
 app.use(
   cors({
     origin: (origin, callback) => {
