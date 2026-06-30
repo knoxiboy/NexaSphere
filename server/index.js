@@ -164,7 +164,11 @@ app.use(
           }
         : false,
 
+ HEAD
     // Strict Content Security Policy with ALL directives
+
+    // ✅ FIXED: Strict Content Security Policy with ALL directives
+ 921757a7 (fix(server): harden helmet CSP configuration with missing security directives)
     contentSecurityPolicy: {
       useDefaults: false,
 
@@ -203,7 +207,11 @@ app.use(
         workerSrc: ["'self'", 'blob:'],                         // Restricts web worker sources
         manifestSrc: ["'self'"],                                // Restricts manifest sources
         mediaSrc: ["'self'"],                                   // Restricts media sources
+ HEAD
         frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'],
+
+        frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'], // Restricts iframe sources
+ 921757a7 (fix(server): harden helmet CSP configuration with missing security directives)
         childSrc: ["'none'"],                                   // Restricts child browsing contexts
         upgradeInsecureRequests: [],                            // Upgrades HTTP to HTTPS
 
@@ -241,6 +249,7 @@ app.use(
     },
   })
 );
+ HEAD
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -270,6 +279,7 @@ app.use(
     maxAge: 86400,
   })
 );
+ 921757a7 (fix(server): harden helmet CSP configuration with missing security directives)
 app.options('*', cors());
 
 app.use(enhancedTracingMiddleware);
