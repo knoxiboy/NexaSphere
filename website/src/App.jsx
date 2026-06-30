@@ -50,7 +50,7 @@ const isPlaywright =
 
 import { BookmarkProvider } from './context/BookmarkContext';
 import { useStudentAuth } from './context/StudentAuthContext';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { WalkthroughOverlay } from './components/walkthrough/WalkthroughOverlay';
 import { useWalkthroughStore } from './store/useWalkthroughStore';
 import { useAnalytics } from './hooks/useAnalytics';
@@ -85,7 +85,6 @@ const ProjectsPage = lazy(() => import('./pages/projects/ProjectsPage'));
 const ResourcesPage = lazy(() => import('./pages/resources/ResourcesPage'));
 
 const CertificateVerifyPage = lazy(() => import('./pages/certificates/CertificateVerifyPage'));
-const CollabPage = lazy(() => import('./pages/collab/CollabPage'));
 const PortfolioBuilder = lazy(() => import('./components/portfolio/PortfolioBuilder'));
 const PortfolioAnalytics = lazy(() => import('./pages/portfolio/PortfolioAnalytics'));
 const PublicPortfolio = lazy(() => import('./pages/portfolio/PublicPortfolio'));
@@ -841,19 +840,7 @@ function MainRouter({
               }
             />
 
-            {/* â”€â”€ Collab â”€â”€ */}
-            <Route
-              path="/collab"
-              element={
-                <ErrorBoundary>
-                  <PageIn k="collab">
-                    <CollabPage onBack={onBackHome} />
-                  </PageIn>
-                </ErrorBoundary>
-              }
-            />
-
-            {/* â”€â”€ About â”€â”€ */}
+            {/* ── About ── */}
             <Route
               path="/about"
               element={
