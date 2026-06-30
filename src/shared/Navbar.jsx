@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Contrast } from 'lucide-react';
+import { Globe, Type } from 'lucide-react';
 import { BRAND_LOGO_FULL, BRAND_LOGO_ICON } from './brandAssets';
 
 const TABS = [
@@ -116,7 +116,55 @@ function LanguageToggle() {
   );
 }
 
-export default function Navbar({ activeTab, onTabChange, onToggleTheme, theme, onApply, onJoin }) {
+function FontSizeToggle({ fontSize, onToggle }) {
+  const label = fontSize === 'normal' ? 'Normal' : fontSize === 'large' ? 'Large' : 'Extra Large';
+  return (
+    <button
+      className="ns-fontsize-toggle"
+      onClick={onToggle}
+      aria-label={`Toggle Font Size. Current: ${label}`}
+      title={`Toggle Font Size. Current: ${label}`}
+      style={{
+        background: 'var(--card)',
+        border: '1px solid var(--bdr)',
+        borderRadius: '50px',
+        padding: '6px 12px',
+        color: 'var(--t2)',
+        fontSize: '0.8rem',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        fontFamily: "'Space Mono', monospace",
+        fontWeight: 600,
+        height: '32px',
+        transition: 'all 0.2s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'var(--c1)';
+        e.currentTarget.style.color = 'var(--t1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--bdr)';
+        e.currentTarget.style.color = 'var(--t2)';
+      }}
+    >
+      <Type size={14} aria-hidden="true" />
+      <span>{fontSize === 'normal' ? 'A' : fontSize === 'large' ? 'A+' : 'A++'}</span>
+    </button>
+  );
+}
+
+export default function Navbar({
+  activeTab,
+  onTabChange,
+  onToggleTheme,
+  theme,
+  fontSize,
+  onToggleFontSize,
+  onApply,
+  onJoin,
+}) {
   const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobile, setMobile] = useState(window.innerWidth <= 768);
@@ -167,6 +215,7 @@ export default function Navbar({ activeTab, onTabChange, onToggleTheme, theme, o
           <div className="ns-mobile-top-actions">
             <LanguageToggle />
             <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+            <FontSizeToggle fontSize={fontSize} onToggle={onToggleFontSize} />
             <button
               className="ns-mobile-menu-toggle"
               onClick={toggleMenu}
@@ -319,6 +368,7 @@ export default function Navbar({ activeTab, onTabChange, onToggleTheme, theme, o
           </div>
           <LanguageToggle />
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          <FontSizeToggle fontSize={fontSize} onToggle={onToggleFontSize} />
         </div>
       </div>
     </nav>
