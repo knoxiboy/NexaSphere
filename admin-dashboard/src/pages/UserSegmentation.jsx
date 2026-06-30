@@ -200,7 +200,7 @@ export function UserSegmentation() {
                     onChange={(e) => setActivityLevel(e.target.value)}
                   >
                     <option value="">Any</option>
-                    <option value="active">Active (>= 5 events / 30d)</option>
+                    <option value="active">Active (&gt;= 5 events / 30d)</option>
                     <option value="inactive">Inactive (no events / 60d)</option>
                   </select>
                 </div>
