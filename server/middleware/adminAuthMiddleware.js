@@ -136,6 +136,10 @@ async function recordLoginAttempt(ip) {
       expiresAt: now + LOGIN_WINDOW_MS,
     };
     loginAttemptsByIp.set(ip, entry);
+    if (loginAttemptsByIp.size > LOGIN_MAX_TRACKED_IPS) {
+      const oldestKey = loginAttemptsByIp.keys().next().value;
+      if (oldestKey) loginAttemptsByIp.delete(oldestKey);
+    }
     return entry;
   } catch (err) {
     console.error('[Redis Error] Failed to record login attempt:', err.message);
