@@ -52,16 +52,7 @@ const isPlaywright =
   typeof window !== 'undefined' && window.navigator.userAgent.includes('Playwright');
 
 import { BookmarkProvider } from './context/BookmarkContext';
-import { StudentAuthProvider, useStudentAuth } from './context/StudentAuthContext';
-import BookmarksDrawer from './components/bookmarks/BookmarksDrawer';
-import { useTheme } from './hooks/useTheme';
-import { useInteractionEffects } from './hooks/useInteractionEffects';
-import { useBackToTop } from './hooks/useScrollLogic';
-
-import MoveToTop from './shared/MoveToTop';
-import OfflineBanner from './components/pwa/OfflineBanner.jsx';
-import InstallPrompt from './components/pwa/InstallPrompt.jsx';
-import UpdatePrompt from './components/pwa/UpdatePrompt.jsx';
+import { useStudentAuth } from './context/StudentAuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { WalkthroughOverlay } from './components/walkthrough/WalkthroughOverlay';
 import { useWalkthroughStore } from './store/useWalkthroughStore';
@@ -71,7 +62,19 @@ import { SessionRecordingProvider } from './context/SessionRecordingProvider';
 // Lazy-loaded heavy pages
 const RecruitmentPage = lazy(() => import('./pages/recruitment/RecruitmentPage'));
 const MembershipPage = lazy(() => import('./pages/membership/MembershipPage'));
-const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
+
+const AdminPage = () => {
+  useEffect(() => {
+    const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5001';
+    window.location.href = adminUrl;
+  }, []);
+  return (
+    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--t1)' }}>
+      <h2>Redirecting to Admin Dashboard...</h2>
+      <p>If you are not redirected, <a href={import.meta.env.VITE_ADMIN_URL || 'http://localhost:5001'} style={{ color: 'var(--c1)' }}>click here</a>.</p>
+    </div>
+  );
+};
 const ActivitiesPage = lazy(() => import('./pages/activities/ActivitiesPage'));
 const ActivityDetailPage = lazy(() => import('./pages/activities/ActivityDetailPage'));
 const EventsPage = lazy(() => import('./pages/events/EventsPage'));
