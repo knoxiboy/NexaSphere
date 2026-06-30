@@ -34,7 +34,7 @@ async function getRedis() {
       redisClient = new Redis();
     }
     redisClient.on('error', (err) => logger.warn('ThrottleMiddleware Redis error', { err: err.message }));
-  } catch {
+  } catch (err) {
     logger.warn('ThrottleMiddleware: Redis unavailable, falling back to in-memory');
     redisClient = null;
   }

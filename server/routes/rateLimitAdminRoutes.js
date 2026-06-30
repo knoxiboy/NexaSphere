@@ -32,7 +32,7 @@ async function redis() {
       _redis = new Redis();
     }
     _redis.on('error', () => {});
-  } catch {
+  } catch (err) {
     _redis = null;
   }
   return _redis;
