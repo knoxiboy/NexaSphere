@@ -219,6 +219,12 @@ export const cancelRegistration = wrapAsync(async (req, res) => {
     return res.status(400).json({ error: 'Valid email address is required' });
   }
 
+  // Ownership check — authenticated user can only cancel their own registration
+  const authenticatedEmail = (req.studentUser?.email || '').toLowerCase();
+  if (authenticatedEmail !== sanitizedEmail) {
+    return res.status(403).json({ error: 'Forbidden: you can only cancel your own registration' });
+  }
+
   const event = await eventsRepository.getById(eventId);
   if (!event) {
     return res.status(404).json({ error: 'Event not found' });

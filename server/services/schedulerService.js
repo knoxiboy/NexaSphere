@@ -196,6 +196,14 @@ const TASK_DEFINITIONS = [
     enabled: true,
   },
   {
+    id: 'evaluate-segments',
+    name: 'Evaluate Analytics Segments',
+    description: 'Periodically evaluate rules and assign users to segments',
+    cron: '0 */6 * * *', // Every 6 hours
+    category: 'analytics',
+    enabled: true,
+  },
+  {
     id: 'overdue-task-reminder',
     name: 'Overdue Task Reminder',
     description: 'Scans Kanban boards for overdue tasks and notifies assignees',
@@ -353,6 +361,9 @@ class SchedulerService extends EventEmitter {
       case 'analytics-aggregation':
         await this._aggregateAnalytics();
         break;
+      case 'evaluate-segments':
+        await this._evaluateSegments();
+        break;
       case 'overdue-task-reminder':
         console.log('[SchedulerService] Processing overdue task notifications...');
         // logic to fetch tasks with dueDate < now and status != 'Done' and notify assignees
@@ -366,6 +377,12 @@ class SchedulerService extends EventEmitter {
       default:
         throw new Error(`No implementation for task "${task.id}"`);
     }
+  }
+
+  async _evaluateSegments() {
+    logger.info('[Scheduler] Evaluating analytics segments');
+    const { analyticsService } = await import('./analyticsService.js');
+    await analyticsService.evaluateSegments();
   }
 
   async _sendEmailDigest() {

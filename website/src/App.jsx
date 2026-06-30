@@ -63,6 +63,10 @@ import OfflineBanner from './components/pwa/OfflineBanner.jsx';
 import InstallPrompt from './components/pwa/InstallPrompt.jsx';
 import UpdatePrompt from './components/pwa/UpdatePrompt.jsx';
 import ErrorBoundary from './components/ErrorBoundary';
+import { WalkthroughOverlay } from './components/walkthrough/WalkthroughOverlay';
+import { useWalkthroughStore } from './store/useWalkthroughStore';
+import { useAnalytics } from './hooks/useAnalytics';
+import { SessionRecordingProvider } from './context/SessionRecordingProvider';
 
 // Lazy-loaded heavy pages
 const RecruitmentPage = lazy(() => import('./pages/recruitment/RecruitmentPage'));
@@ -371,6 +375,18 @@ function AppShell() {
   const { isOpen: isTerminalOpen, closeTerminal } = useDeveloperMode();
 
   const { eventsData, swUpdateFn } = useAppBootstrap(cinDone);
+  const { isAuthenticated, loading: authLoading } = useStudentAuth();
+  const hasCompletedWalkthrough = useWalkthroughStore((state) => state.hasCompleted);
+  const startWalkthrough = useWalkthroughStore((state) => state.startWalkthrough);
+
+  useEffect(() => {
+    if (cinDone && !authLoading && isAuthenticated && !hasCompletedWalkthrough) {
+      const t = setTimeout(() => {
+        startWalkthrough();
+      }, 1500);
+      return () => clearTimeout(t);
+    }
+  }, [cinDone, authLoading, isAuthenticated, hasCompletedWalkthrough, startWalkthrough]);
 
   // Skip cinematic opening for deep links (anything except "/")
   useEffect(() => {
@@ -401,6 +417,7 @@ function AppShell() {
       {swUpdateFn && <UpdatePrompt updateSW={swUpdateFn} />}
 
       <Chatbot />
+      <WalkthroughOverlay />
 
       {/* Loading cover to prevent flash during intro sequence */}
       <div
@@ -450,6 +467,7 @@ function MainRouter({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { sessionId } = useAnalytics();
 
   const [mobile, setMobile] = useState(window.innerWidth <= 768);
   const [wipeOn, setWipeOn] = useState(false);
@@ -606,7 +624,7 @@ function MainRouter({
   const nh = mobile ? MNH : DNH;
 
   return (
-    <>
+    <SessionRecordingProvider sessionId={sessionId}>
       {cinDone && <AmbientOrbs theme={theme} />}
       {cinDone && (
         <Navbar
@@ -1160,7 +1178,8 @@ function MainRouter({
           else if (type === 'Roadmap') onTab('Roadmaps');
         }}
       />
-    </>
+      {cinDone && <FloatingDock />}
+    </SessionRecordingProvider>
   );
 }
 
