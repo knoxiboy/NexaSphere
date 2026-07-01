@@ -225,7 +225,7 @@ class BulkOperationsService {
             }
           });
           processed++;
-          this.updateJobProgress(job.id, processed, []);
+          this.updateJobProgress(jobId, processed, []);
         } catch (err) {
           jobErrors.push(`Row ${user.row}: Database error - ${err.message}`);
         }
@@ -233,16 +233,18 @@ class BulkOperationsService {
 
       // Log to audit log
       if (oldState.length > 0 || newState.length > 0) {
-        await auditLogRepository.insertAuditLog({
-          adminId,
-          action: 'BULK_USER_IMPORT',
-          oldState: { operations: oldState },
-          newState: { operations: newState },
-        });
-        processed++;
-        this.updateJobProgress(jobId, processed, []);
-      } catch (err) {
-        jobErrors.push(`Row ${user.row}: Database error - ${err.message}`);
+        try {
+          await auditLogRepository.insertAuditLog({
+            adminId,
+            action: 'BULK_USER_IMPORT',
+            oldState: { operations: oldState },
+            newState: { operations: newState },
+          });
+          processed++;
+          this.updateJobProgress(jobId, processed, []);
+        } catch (err) {
+          jobErrors.push(`Row ${user.row}: Database error - ${err.message}`);
+        }
       }
     }
 

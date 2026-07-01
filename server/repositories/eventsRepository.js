@@ -155,7 +155,11 @@ export const eventsRepository = {
           JSON.stringify(event.restrictedGroups || []),
         ]
       );
-      return mapRow(rows[0]);
+      const mapped = mapRow(rows[0]);
+      import('../services/searchIndexer.js')
+        .then(({ searchIndexer }) => searchIndexer.indexEvent(mapped))
+        .catch(() => {});
+      return mapped;
     });
   },
 
@@ -187,13 +191,22 @@ export const eventsRepository = {
         ]
       );
       if (!rows.length) return null;
-      return mapRow(rows[0]);
+      const mapped = mapRow(rows[0]);
+      import('../services/searchIndexer.js')
+        .then(({ searchIndexer }) => searchIndexer.indexEvent(mapped))
+        .catch(() => {});
+      return mapped;
     });
   },
 
   async delete(id) {
     return withDb(async (client) => {
       const { rowCount } = await client.query('delete from events where id=$1', [id]);
+      if (rowCount > 0) {
+        import('../services/searchIndexer.js')
+          .then(({ searchIndexer }) => searchIndexer.deleteDocument('events', id))
+          .catch(() => {});
+      }
       return rowCount > 0;
     });
   },
