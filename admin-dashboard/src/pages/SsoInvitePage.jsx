@@ -61,10 +61,14 @@ export function SsoInvitePage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 max-w-lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            <label
+              htmlFor="sso-invite-email"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+            >
               Guest Email Address
             </label>
             <input
+              id="sso-invite-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
