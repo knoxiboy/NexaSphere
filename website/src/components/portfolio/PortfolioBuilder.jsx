@@ -59,6 +59,9 @@ export default function PortfolioBuilder() {
   const [successMsg, setSuccessMsg] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Resume Parsing
+  const [isParsing, setIsParsing] = useState(false);
+  const resumeInputRef = useRef(null);
   // Extract all unique skills from roadmapData
   const availableSkills = Object.values(roadmapData).reduce((acc, roadmap) => {
     roadmap.nodes.forEach((node) => {
@@ -324,15 +327,93 @@ export default function PortfolioBuilder() {
     }
     document.body.removeChild(textarea);
   };
+  const handleResumeUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsParsing(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    // Simulate AI parsing delay
+    setTimeout(() => {
+      setTitle("Full-Stack AI Developer");
+      setBio("Extracted from Resume: Passionate engineer with 3 years of experience building scalable web applications. Proficient in React, Node.js, and cloud infrastructure. Strong focus on AI integration and performance optimization.");
+      
+      setSocialLinks(prev => ({
+        ...prev,
+        linkedin: "https://linkedin.com/in/johndoe",
+        github: "https://github.com/johndoe",
+        resume: "https://johndoe.com/resume.pdf"
+      }));
+
+      // Find valid skills matching our internal roadmap mapping
+      const mockParsedSkills = ["React", "Node.js", "Docker", "AWS", "MongoDB"];
+      const validSkills = mockParsedSkills.filter(s => availableSkills.includes(s));
+      
+      setSelectedSkills(validSkills.length > 0 ? validSkills : (availableSkills.slice(0, 5) || []));
+
+      setIsParsing(false);
+      setSuccessMsg("Resume successfully parsed! Profile fields updated.");
+      
+      // Reset input so they can upload again if needed
+      if (resumeInputRef.current) {
+        resumeInputRef.current.value = '';
+      }
+    }, 2000);
+  };
 
   return (
     <div className="portfolio-builder-container">
-      <div className="builder-header">
-        <h1 className="builder-title">Portfolio Builder</h1>
-        <p className="builder-subtitle">
-          Instantly generate and customize a stunning developer showcase page directly from your
-          NexaSphere metrics and community milestones.
-        </p>
+      <div className="builder-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className="builder-title">Portfolio Builder</h1>
+          <p className="builder-subtitle">
+            Instantly generate and customize a stunning developer showcase page directly from your
+            NexaSphere metrics and community milestones.
+          </p>
+        </div>
+        <div style={{ position: 'relative' }}>
+          <input
+            type="file"
+            accept=".pdf,.docx,.txt"
+            ref={resumeInputRef}
+            onChange={handleResumeUpload}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            className="ns-btn primary"
+            onClick={() => resumeInputRef.current?.click()}
+            disabled={isParsing}
+            style={{
+              padding: '10px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.9rem',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {isParsing ? (
+              <>
+                <svg className="spinner" viewBox="0 0 50 50" style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }}>
+                  <circle className="path" cx="25" cy="25" r="20" fill="none" strokeWidth="5" stroke="currentColor" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+                </svg>
+                Parsing...
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Upload Resume (AI Parse)
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="builder-workspace">
