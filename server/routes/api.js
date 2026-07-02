@@ -27,7 +27,7 @@ import { achievementSchema } from '../validators/portfolioSchemas.js';
 import { auditLogRepository } from '../repositories/auditLogRepository.js';
 import mediaManagementRoutes from "./mediaManagement.js";
 import * as localAuthController from '../controllers/localAuthController.js';
-
+import draftRecoveryRoutes from "./draftRecovery.js";
 
 import * as recommendationsController from '../controllers/recommendationsController.js';
 import * as gamificationController from '../controllers/gamificationController.js';
@@ -428,6 +428,8 @@ router.use(
   "/recommendations",
   recommendationEngine
 );
+
+router.use("/api/drafts", draftRecoveryRoutes);
 
 router.use("/api/media", mediaManagementRoutes);
 export default router;

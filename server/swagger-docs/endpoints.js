@@ -660,4 +660,189 @@
  *         description: Recommendation statistics
  */
 
+/**
+ * @swagger
+ * tags:
+ *   name: Draft Recovery
+ *   description: Draft and Auto-Save Recovery APIs
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{userId}:
+ *   post:
+ *     summary: Create a new draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               module:
+ *                 type: string
+ *                 example: events
+ *               title:
+ *                 type: string
+ *                 example: AI Workshop Draft
+ *               content:
+ *                 type: string
+ *                 example: Event description goes here...
+ *     responses:
+ *       201:
+ *         description: Draft created successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{userId}:
+ *   get:
+ *     summary: Get all drafts for a user
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of user drafts
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{userId}/{draftId}:
+ *   get:
+ *     summary: Get a specific draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft retrieved successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}:
+ *   put:
+ *     summary: Update an existing draft (Auto Save)
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 example: Updated draft content...
+ *     responses:
+ *       200:
+ *         description: Draft updated successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}:
+ *   delete:
+ *     summary: Delete a draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft deleted successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}/restore:
+ *   post:
+ *     summary: Restore latest version of a draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft restored successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}/history:
+ *   get:
+ *     summary: Get version history of a draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Version history retrieved successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}/sync:
+ *   post:
+ *     summary: Synchronize draft across devices
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft synchronized successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/stats:
+ *   get:
+ *     summary: Get draft recovery statistics
+ *     tags: [Draft Recovery]
+ *     responses:
+ *       200:
+ *         description: Draft statistics retrieved successfully
+ */
+
 export default {};
