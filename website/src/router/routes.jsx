@@ -42,6 +42,8 @@ const SponsorsPage = lazy(() => import('../pages/sponsors/SponsorsPage'));
 const RecommendationsPage = lazy(() => import('../pages/resume/RecommendationsPage'));
 const SkillExchangePage = lazy(() => import('../pages/skills/SkillExchangePage'));
 const WebhooksPage = lazy(() => import('../pages/monitoring/WebhooksPage'));
+const AmaListPage = lazy(() => import('../pages/ama/AmaListPage'));
+const AmaThreadPage = lazy(() => import('../pages/ama/AmaThreadPage'));
 
 // Static/Eager page components
 import HeroSection from '../pages/home/HeroSection';
@@ -428,6 +430,24 @@ export function AppRoutes({
               <WebhooksPage />
             </PageIn>
           </ProtectedRoute>
+        }
+      />
+
+      {/* ── AMA Spaces ── */}
+      <Route
+        path="/ama"
+        element={
+          <PageIn k="ama">
+            <AmaListPage onBack={onBackHome} />
+          </PageIn>
+        }
+      />
+      <Route
+        path="/ama/:id"
+        element={
+          <PageIn k="ama-thread">
+            <AmaThreadPage />
+          </PageIn>
         }
       />
 
