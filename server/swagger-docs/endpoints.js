@@ -473,4 +473,136 @@
  *                       format: float
  */
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Duplicate Detection
+ *     description: Intelligent Duplicate Detection APIs
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/overview:
+ *   get:
+ *     summary: Get duplicate detection overview
+ *     tags: [Duplicate Detection]
+ *     responses:
+ *       200:
+ *         description: Duplicate overview retrieved successfully.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/check:
+ *   post:
+ *     summary: Check a record for possible duplicates
+ *     tags: [Duplicate Detection]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Duplicate check completed.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/events:
+ *   get:
+ *     summary: Detect duplicate events
+ *     tags: [Duplicate Detection]
+ *     responses:
+ *       200:
+ *         description: Duplicate events retrieved.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/media:
+ *   get:
+ *     summary: Detect duplicate media
+ *     tags: [Duplicate Detection]
+ *     responses:
+ *       200:
+ *         description: Duplicate media retrieved.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/portfolios:
+ *   get:
+ *     summary: Detect duplicate portfolios
+ *     tags: [Duplicate Detection]
+ *     responses:
+ *       200:
+ *         description: Duplicate portfolios retrieved.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/clubs:
+ *   get:
+ *     summary: Detect duplicate club registrations
+ *     tags: [Duplicate Detection]
+ *     responses:
+ *       200:
+ *         description: Duplicate club registrations retrieved.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/merge:
+ *   post:
+ *     summary: Merge duplicate records
+ *     tags: [Duplicate Detection]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id1:
+ *                 type: string
+ *               id2:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Records merged successfully.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/{id}:
+ *   delete:
+ *     summary: Delete duplicate record
+ *     tags: [Duplicate Detection]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Duplicate record deleted successfully.
+ */
+
+/**
+ * @swagger
+ * /api/duplicates/stats:
+ *   get:
+ *     summary: Get duplicate detection statistics
+ *     tags: [Duplicate Detection]
+ *     responses:
+ *       200:
+ *         description: Duplicate statistics retrieved successfully.
+ */
+
 export default {};
