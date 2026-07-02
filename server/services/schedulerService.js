@@ -272,12 +272,21 @@ class SchedulerService extends EventEmitter {
     if (!next) return;
 
     task.nextRun = next;
-    const delay = next.getTime() - Date.now();
+    const MAX_DELAY = 2147483647; // max 32-bit signed int (~24.8 days)
+    const rawDelay = next.getTime() - Date.now();
+    const delay = Math.min(Math.max(rawDelay, 0), MAX_DELAY);
+    const needsRecheck = rawDelay > MAX_DELAY;
 
     const existing = this._timers.get(taskId);
     if (existing) clearTimeout(existing);
 
-    const handle = setTimeout(() => this._runTask(taskId), delay);
+    const handle = setTimeout(() => {
+      if (needsRecheck) {
+        this._scheduleNext(taskId);
+      } else {
+        this._runTask(taskId);
+      }
+    }, delay);
     // Allow the process to exit even if a timer is pending
     if (handle.unref) handle.unref();
     this._timers.set(taskId, handle);

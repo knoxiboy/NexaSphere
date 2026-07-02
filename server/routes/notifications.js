@@ -10,6 +10,7 @@ import { body, validationResult } from 'express-validator';
 import { adminAuthMiddleware } from '../middleware/adminAuthMiddleware.js';
 import { requireStudentAuth } from '../middleware/studentAuthMiddleware.js';
 import { notificationRateLimiter } from '../middleware/rateLimiter.js';
+import { requireNotificationPrefAuth } from '../middleware/auth/customAuth.js';
 import notificationsService from '../services/notificationsService.js';
 import { pushSubscriptionsRepository } from '../repositories/pushSubscriptionsRepository.js';
 import { notificationPreferencesRepository } from '../repositories/notificationPreferencesRepository.js';
