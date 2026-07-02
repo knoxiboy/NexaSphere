@@ -1,8 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { tierRateLimiter } from '../middleware/tierRateLimiter.js';
+import { resolveRateLimitConfig, tierRateLimiter } from '../middleware/tierRateLimiter.js';
 
 test('Tier-Based Rate Limiting & Backoff Middleware Tests', async (t) => {
+  await t.test('0. Unknown tiers fall back to guest defaults', () => {
+    const config = resolveRateLimitConfig('/api/unknown', 'premium');
+
+    assert.deepEqual(config, {
+      capacity: 20,
+      refillRate: 0.5,
+      baseCooldown: 10,
+    });
+  });
+
   await t.test('1. Guest rate limit checks (IP-based keying & headers)', async () => {
     const middleware = tierRateLimiter({ capacity: 5, refillRate: 0.1 });
     const req = { ip: '192.168.1.50', adminSession: null, user: null };
