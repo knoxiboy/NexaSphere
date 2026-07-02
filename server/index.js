@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 import { tracedFetch } from './config/appContext.js';
 import { initObservability } from './observability/index.js';
 import { setTraceIdResolver } from './utils/logContext.js';
@@ -44,6 +44,10 @@ import { notificationPreferencesRepository } from './repositories/notificationPr
 import notificationsService from './services/notificationsService.js';
 import { studentAuthService } from './services/studentAuthService.js';
 import { initializeSentry, addSentryErrorHandler } from './utils/sentry.js';
+import morgan from 'morgan';
+import { recordCompressionRatio } from './observability/metrics.js';
+import { logEvent } from './controllers/analyticsController.js';
+import healthDashboardRouter from './routes/healthDashboard.js';
 import {
   apiRateLimiter,
   formRateLimiter,
@@ -52,7 +56,6 @@ import {
   portfolioRateLimiter,
   searchRateLimiter,
   validateLimiters,
-  searchRateLimiter,
 } from './middleware/rateLimiter.js';
 import {
   authRateLimiter,
@@ -84,7 +87,6 @@ import { slackRepository } from './repositories/slackRepository.js';
 import * as studentAuthController from './controllers/studentAuthController.js';
 import * as forumController from './controllers/forumController.js';
 import { requireStudentAuth } from './middleware/studentAuthMiddleware.js';
-import { studentAuthService } from './services/studentAuthService.js';
 import { loadPersistedPushSubscriptions } from './routes/notifications.js';
 import * as mentorshipController from './controllers/mentorshipController.js';
 import { xssSanitizer } from './middleware/xssSanitizer.js';
@@ -132,6 +134,8 @@ const ADMIN_EVENT_PASSWORD = requiredStrongPassword('ADMIN_EVENT_PASSWORD');
 const SESSION_SECRET = requiredStrongPassword('SESSION_SECRET');
 
 const app = express();
+
+const useStructuredHttpLog = (process.env.LOG_FORMAT || '').toLowerCase() === 'json';
 
 // RECTIFIED: Enable 'trust proxy' to correctly extract client IPs from X-Forwarded-For headers when behind ALBs/Serverless layers
 app.set('trust proxy', 1);
@@ -259,11 +263,6 @@ app.use(
 
         objectSrc: ["'none'"],
 
- feat/i18n-localization-1397
- feat/i18n-localization-1397
-
- fix/csp-helmet-config-1475
- main
         // ✅ CRITICAL FIX: Missing directives added below
         baseUri: ["'self'"],                                    // Prevents <base> tag injection
         frameAncestors: ["'none'"],                             // Prevents clickjacking
@@ -274,25 +273,6 @@ app.use(
         frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'], // Restricts iframe sources
         childSrc: ["'none'"],                                   // Restricts child browsing contexts
         upgradeInsecureRequests: [],                            // Upgrades HTTP to HTTPS
-
-        baseUri: ["'self'"],
-
-        frameAncestors: ["'none'"],
-
-        formAction: ["'self'"],
-
-        upgradeInsecureRequests: [],
-
-        workerSrc: ["'self'", 'blob:'],
-
-        manifestSrc: ["'self'"],
-
-        mediaSrc: ["'self'"],
-
-        frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'],
-
-        childSrc: ["'none'"],
- main
 
         reportUri: '/api/v1/csp-violation',
       },
@@ -328,11 +308,6 @@ app.use(
     },
   })
 );
- feat/i18n-localization-1397
- feat/i18n-localization-1397
-
- fix/csp-helmet-config-1475
- main
 
 
 app.use(
@@ -364,7 +339,6 @@ app.use(
     maxAge: 86400,
   })
 );
- main
 app.options('*', cors());
 
 app.use(enhancedTracingMiddleware);
@@ -398,7 +372,6 @@ app.use('/api', apiRateLimiter);
 app.use('/api', tierRateLimiter());
 
 // Mount route modules
-app.use('/api/form-submissions', formSubmissionsRouter);
 app.post('/api/analytics/track', logEvent);
 app.use('/api/monitoring', monitoringRouter);
 app.use('/api/health-dashboard', healthDashboardRouter);
@@ -454,26 +427,7 @@ const defaultContent = {
   coreTeam: [],
 };
 
-function requiredStrongPassword(name) {
-  const value = String(process.env[name] || '').trim();
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}`);
-  }
-  const hasLower = /[a-z]/.test(value);
-  const hasUpper = /[A-Z]/.test(value);
-  const hasNumber = /\d/.test(value);
-  const hasSymbol = /[^A-Za-z0-9]/.test(value);
 
-  if (value.length < 12 || !hasLower || !hasUpper || !hasNumber || !hasSymbol) {
-    throw new Error(
-      `${name} must be at least 12 characters and include uppercase, lowercase, number, and symbol`
-    );
-  }
-
-  return value;
-}
-
-const ADMIN_EVENT_PASSWORD = requiredStrongPassword('ADMIN_EVENT_PASSWORD');
 
 // â”€â”€ File Upload Configuration â”€â”€
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
