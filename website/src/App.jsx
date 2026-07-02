@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
 
-import ResourcesPage from './pages/resources/ResourcesPage.jsx';
 import './styles/themes.css';
 import './styles/globals.css';
 import './styles/animations.css';
@@ -15,8 +14,8 @@ import './i18n';
 
 // Core structural elements
 import AppProviders from './providers/AppProviders';
-import AppRoutes, { Wipe } from './router/routes';
-import Cursor from './components/Cursor';
+import AppRoutes from './router/routes';
+
 import useAppBootstrap from './hooks/useAppBootstrap';
 import { useTheme } from './hooks/useTheme';
 import { useDeveloperMode } from './hooks/useDeveloperMode';
@@ -46,28 +45,18 @@ import {
 } from './shared/MotionLayer';
 import { activityPages } from './data/activities/index';
 
-const MNH = 88;
-const DNH = 64;
 const isPlaywright =
   typeof window !== 'undefined' && window.navigator.userAgent.includes('Playwright');
 
 import { BookmarkProvider } from './context/BookmarkContext';
 import { StudentAuthProvider, useStudentAuth } from './context/StudentAuthContext';
-import BookmarksDrawer from './components/bookmarks/BookmarksDrawer';
-import { useTheme } from './hooks/useTheme';
-import { useInteractionEffects } from './hooks/useInteractionEffects';
-import { useBackToTop } from './hooks/useScrollLogic';
 
-import MoveToTop from './shared/MoveToTop';
-import OfflineBanner from './components/pwa/OfflineBanner.jsx';
-import InstallPrompt from './components/pwa/InstallPrompt.jsx';
-import UpdatePrompt from './components/pwa/UpdatePrompt.jsx';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Lazy-loaded heavy pages
 const RecruitmentPage = lazy(() => import('./pages/recruitment/RecruitmentPage'));
 const MembershipPage = lazy(() => import('./pages/membership/MembershipPage'));
-const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
+
 const ActivitiesPage = lazy(() => import('./pages/activities/ActivitiesPage'));
 const ActivityDetailPage = lazy(() => import('./pages/activities/ActivityDetailPage'));
 const EventsPage = lazy(() => import('./pages/events/EventsPage'));
@@ -81,7 +70,7 @@ const ProjectsPage = lazy(() => import('./pages/projects/ProjectsPage'));
 const ResourcesPage = lazy(() => import('./pages/resources/ResourcesPage'));
 
 const CertificateVerifyPage = lazy(() => import('./pages/certificates/CertificateVerifyPage'));
-const CollabPage = lazy(() => import('./pages/collab/CollabPage'));
+
 const PortfolioBuilder = lazy(() => import('./components/portfolio/PortfolioBuilder'));
 const PortfolioAnalytics = lazy(() => import('./pages/portfolio/PortfolioAnalytics'));
 const PublicPortfolio = lazy(() => import('./pages/portfolio/PublicPortfolio'));
@@ -826,18 +815,6 @@ function MainRouter({
               }
             />
 
-            {/* â”€â”€ Collab â”€â”€ */}
-            <Route
-              path="/collab"
-              element={
-                <ErrorBoundary>
-                  <PageIn k="collab">
-                    <CollabPage onBack={onBackHome} />
-                  </PageIn>
-                </ErrorBoundary>
-              }
-            />
-
             {/* â”€â”€ About â”€â”€ */}
             <Route
               path="/about"
@@ -977,18 +954,6 @@ function MainRouter({
                 <ErrorBoundary>
                   <PageIn k="mentorship-dashboard">
                     <MentorshipDashboard />
-                  </PageIn>
-                </ErrorBoundary>
-              }
-            />
-
-            {/* â”€â”€ Admin (embedded, for quick access) â”€â”€ */}
-            <Route
-              path="/admin"
-              element={
-                <ErrorBoundary>
-                  <PageIn k="admin">
-                    <AdminPage onBack={onBackHome} />
                   </PageIn>
                 </ErrorBoundary>
               }
