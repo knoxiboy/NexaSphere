@@ -52,6 +52,7 @@ export default function PortfolioBuilder() {
   const [isFetchingGh, setIsFetchingGh] = useState(false);
   const [ghRepos, setGhRepos] = useState([]);
   const [ghError, setGhError] = useState('');
+  const [ghFetchAttempted, setGhFetchAttempted] = useState(false);
 
   // States
   const [isSaving, setIsSaving] = useState(false);
@@ -267,10 +268,9 @@ export default function PortfolioBuilder() {
       }
 
       const data = await response.json();
-      const top5 = [...data]
-        .sort((a, b) => b.stargazers_count - a.stargazers_count)
-        .slice(0, 5);
+      const top5 = [...data].sort((a, b) => b.stargazers_count - a.stargazers_count).slice(0, 5);
       setGhRepos(top5);
+      setGhFetchAttempted(true);
     } catch (err) {
       if (err.name === 'AbortError') return;
       setGhError('Failed to fetch repositories. Please check your connection and try again.');
@@ -781,6 +781,12 @@ export default function PortfolioBuilder() {
                 </div>
               )}
 
+              {!ghError && !isFetchingGh && ghFetchAttempted && ghRepos.length === 0 && (
+                <div style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: '12px' }}>
+                  No public repositories found for this GitHub account.
+                </div>
+              )}
+
               {isFetchingGh ? (
                 <div
                   className="checklist-grid"
@@ -814,9 +820,17 @@ export default function PortfolioBuilder() {
                             <span style={{ fontWeight: 'bold' }}>{repo.name}</span>
                             {(repo.stargazers_count > 0 || repo.forks_count > 0) && (
                               <span
-                                style={{ marginLeft: 'auto', fontSize: '0.75rem', opacity: 0.8, display: 'flex', gap: '8px' }}
+                                style={{
+                                  marginLeft: 'auto',
+                                  fontSize: '0.75rem',
+                                  opacity: 0.8,
+                                  display: 'flex',
+                                  gap: '8px',
+                                }}
                               >
-                                {repo.stargazers_count > 0 && <span>★ {repo.stargazers_count}</span>}
+                                {repo.stargazers_count > 0 && (
+                                  <span>★ {repo.stargazers_count}</span>
+                                )}
                                 {repo.forks_count > 0 && <span>⑂ {repo.forks_count}</span>}
                               </span>
                             )}
