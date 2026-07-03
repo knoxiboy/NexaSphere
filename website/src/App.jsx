@@ -30,6 +30,7 @@ import Chatbot from './shared/Chatbot';
 import ScrollProgress from './shared/ScrollProgress';
 import SearchBar from './components/SearchBar';
 import Terminal from './components/developer/Terminal';
+import BookmarksDrawer from './components/bookmarks/BookmarksDrawer';
 import CinematicOpening from './shared/CinematicOpening';
 import OfflineBanner from './components/pwa/OfflineBanner.jsx';
 import InstallPrompt from './components/pwa/InstallPrompt.jsx';
@@ -52,15 +53,6 @@ const isPlaywright =
 
 import { BookmarkProvider } from './context/BookmarkContext';
 import { StudentAuthProvider, useStudentAuth } from './context/StudentAuthContext';
-import BookmarksDrawer from './components/bookmarks/BookmarksDrawer';
-import { useTheme } from './hooks/useTheme';
-import { useInteractionEffects } from './hooks/useInteractionEffects';
-import { useBackToTop } from './hooks/useScrollLogic';
-
-import MoveToTop from './shared/MoveToTop';
-import OfflineBanner from './components/pwa/OfflineBanner.jsx';
-import InstallPrompt from './components/pwa/InstallPrompt.jsx';
-import UpdatePrompt from './components/pwa/UpdatePrompt.jsx';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy-loaded heavy pages
