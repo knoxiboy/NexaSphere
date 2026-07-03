@@ -44,7 +44,7 @@ export const analyticsService = {
 
       // Events this month (approximate via events table)
       const { rows: eventsRows } = await client.query(
-        `SELECT COUNT(*) AS count FROM events WHERE created_at >= $1`,
+        `SELECT COUNT(*) AS count FROM analytics_events WHERE created_at >= $1`,
         [firstDayOfMonth]
       );
       const eventsThisMonth = parseInt(eventsRows[0]?.count || 0, 10);
