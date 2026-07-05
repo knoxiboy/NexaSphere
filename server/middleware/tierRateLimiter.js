@@ -51,6 +51,12 @@ function resolveEndpointConfig(path, tier) {
   return matched ? ENDPOINT_LIMITS[matched][tier] : {};
 }
 
+export function resolveRateLimitConfig(path, tier, options = {}) {
+  const baseConfig = CONFIG[tier] || CONFIG.guest;
+  const endpointCfg = resolveEndpointConfig(path, tier) || {};
+  return { ...baseConfig, ...options, ...endpointCfg };
+}
+
 /**
  * Clean up expired memory entries to prevent memory leaks
  */
@@ -94,8 +100,7 @@ export function tierRateLimiter(options = {}) {
       tier = 'guest';
     }
 
-    const endpointCfg = resolveEndpointConfig(req.path, tier);
-    const { capacity, refillRate, baseCooldown } = { ...CONFIG[tier], ...options, ...endpointCfg };
+    const { capacity, refillRate, baseCooldown } = resolveRateLimitConfig(req.path, tier, options);
     const rateLimitKey = `tier-rate-limit:${identifier}`;
     const violationsKey = `tier-rate-limit-violations:${identifier}`;
     const blockedKey = `tier-rate-limit-blocked:${identifier}`;
