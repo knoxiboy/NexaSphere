@@ -46,7 +46,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
 
-const duplicateDetectionRoutes = require("./duplicateDetection");
+const bookmarkRoutes = require("./bookmark");
 
 const router = Router();
 
@@ -416,14 +416,6 @@ router.get(
   auditLogController.getStats
 );
 
-router.use(
-  "/duplicates",
-  duplicateDetectionRoutes
-);
-
-router.use(
-    "/operational-insights",
-    operationalInsightsRoutes
-);
+router.use("/bookmarks", bookmarkRoutes);
 
 export default router;

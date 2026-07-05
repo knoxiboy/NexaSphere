@@ -476,113 +476,39 @@
 /**
  * @swagger
  * tags:
- *   - name: Duplicate Detection
- *     description: Intelligent Duplicate Detection APIs
+ *   - name: Bookmarks
+ *     description: Universal Bookmark & Favorites Management APIs
  */
 
 /**
  * @swagger
- * /api/duplicates/overview:
- *   get:
- *     summary: Get duplicate detection overview
- *     tags: [Duplicate Detection]
- *     responses:
- *       200:
- *         description: Duplicate overview retrieved successfully.
- */
-
-/**
- * @swagger
- * /api/duplicates/check:
+ * /api/bookmarks:
  *   post:
- *     summary: Check a record for possible duplicates
- *     tags: [Duplicate Detection]
+ *     summary: Create a new bookmark
+ *     tags:
+ *       - Bookmarks
  *     requestBody:
  *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
  *     responses:
- *       200:
- *         description: Duplicate check completed.
- */
-
-/**
- * @swagger
- * /api/duplicates/events:
+ *       201:
+ *         description: Bookmark created successfully
+ *
  *   get:
- *     summary: Detect duplicate events
- *     tags: [Duplicate Detection]
+ *     summary: Get all bookmarks
+ *     tags:
+ *       - Bookmarks
  *     responses:
  *       200:
- *         description: Duplicate events retrieved.
+ *         description: List of bookmarks
  */
 
 /**
  * @swagger
- * /api/duplicates/media:
- *   get:
- *     summary: Detect duplicate media
- *     tags: [Duplicate Detection]
- *     responses:
- *       200:
- *         description: Duplicate media retrieved.
- */
-
-/**
- * @swagger
- * /api/duplicates/portfolios:
- *   get:
- *     summary: Detect duplicate portfolios
- *     tags: [Duplicate Detection]
- *     responses:
- *       200:
- *         description: Duplicate portfolios retrieved.
- */
-
-/**
- * @swagger
- * /api/duplicates/clubs:
- *   get:
- *     summary: Detect duplicate club registrations
- *     tags: [Duplicate Detection]
- *     responses:
- *       200:
- *         description: Duplicate club registrations retrieved.
- */
-
-/**
- * @swagger
- * /api/duplicates/merge:
- *   post:
- *     summary: Merge duplicate records
- *     tags: [Duplicate Detection]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id1:
- *                 type: string
- *               id2:
- *                 type: string
- *     responses:
- *       200:
- *         description: Records merged successfully.
- */
-
-/**
- * @swagger
- * /api/duplicates/{id}:
+ * /api/bookmarks/{id}:
  *   delete:
- *     summary: Delete duplicate record
- *     tags: [Duplicate Detection]
+ *     summary: Delete a bookmark
+ *     tags:
+ *       - Bookmarks
  *     parameters:
  *       - in: path
  *         name: id
@@ -591,168 +517,144 @@
  *           type: string
  *     responses:
  *       200:
- *         description: Duplicate record deleted successfully.
+ *         description: Bookmark deleted successfully
  */
 
 /**
  * @swagger
- * /api/duplicates/stats:
+ * /api/bookmarks/search:
  *   get:
- *     summary: Get duplicate detection statistics
- *     tags: [Duplicate Detection]
+ *     summary: Search bookmarks
+ *     tags:
+ *       - Bookmarks
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Duplicate statistics retrieved successfully.
+ *         description: Search results
  */
 
 /**
  * @swagger
- * tags:
- *   name: Operational Insights
- *   description: Platform Operational Insights & Health Command Center APIs
- */
-
-/**
- * @swagger
- * /api/operational-insights/overview:
+ * /api/bookmarks/recent:
  *   get:
- *     summary: Get dashboard overview
- *     tags: [Operational Insights]
+ *     summary: Get recently bookmarked items
+ *     tags:
+ *       - Bookmarks
  *     responses:
  *       200:
- *         description: Dashboard overview retrieved successfully
+ *         description: Recently bookmarked items
  */
 
 /**
  * @swagger
- * /api/operational-insights/health:
+ * /api/bookmarks/folders:
+ *   post:
+ *     summary: Create bookmark folder
+ *     tags:
+ *       - Bookmarks
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Folder created
+ *
  *   get:
- *     summary: Get system health
- *     tags: [Operational Insights]
+ *     summary: Get all bookmark folders
+ *     tags:
+ *       - Bookmarks
  *     responses:
  *       200:
- *         description: System health retrieved successfully
+ *         description: Folder list
  */
 
 /**
  * @swagger
- * /api/operational-insights/users:
- *   get:
- *     summary: Get active user statistics
- *     tags: [Operational Insights]
+ * /api/bookmarks/folders/{id}:
+ *   put:
+ *     summary: Update bookmark folder
+ *     tags:
+ *       - Bookmarks
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: User statistics retrieved successfully
+ *         description: Folder updated
+ *
+ *   delete:
+ *     summary: Delete bookmark folder
+ *     tags:
+ *       - Bookmarks
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Folder deleted
  */
 
 /**
  * @swagger
- * /api/operational-insights/traffic:
- *   get:
- *     summary: Get API traffic analytics
- *     tags: [Operational Insights]
+ * /api/bookmarks/share/{id}:
+ *   post:
+ *     summary: Share bookmark collection
+ *     tags:
+ *       - Bookmarks
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: API traffic retrieved successfully
+ *         description: Share link generated
  */
 
 /**
  * @swagger
- * /api/operational-insights/database:
+ * /api/bookmarks/sync:
  *   get:
- *     summary: Get database performance
- *     tags: [Operational Insights]
+ *     summary: Synchronize bookmarks across devices
+ *     tags:
+ *       - Bookmarks
  *     responses:
  *       200:
- *         description: Database performance retrieved successfully
+ *         description: Sync completed
  */
 
 /**
  * @swagger
- * /api/operational-insights/jobs:
+ * /api/bookmarks/export:
  *   get:
- *     summary: Get background job status
- *     tags: [Operational Insights]
+ *     summary: Export bookmarks
+ *     tags:
+ *       - Bookmarks
  *     responses:
  *       200:
- *         description: Background jobs retrieved successfully
+ *         description: Bookmark export completed
  */
 
 /**
  * @swagger
- * /api/operational-insights/storage:
+ * /api/bookmarks/analytics:
  *   get:
- *     summary: Get storage utilization
- *     tags: [Operational Insights]
+ *     summary: Get bookmark analytics
+ *     tags:
+ *       - Bookmarks
  *     responses:
  *       200:
- *         description: Storage usage retrieved successfully
- */
-
-/**
- * @swagger
- * /api/operational-insights/notifications:
- *   get:
- *     summary: Get notification delivery statistics
- *     tags: [Operational Insights]
- *     responses:
- *       200:
- *         description: Notification statistics retrieved successfully
- */
-
-/**
- * @swagger
- * /api/operational-insights/errors:
- *   get:
- *     summary: Get error monitoring logs
- *     tags: [Operational Insights]
- *     responses:
- *       200:
- *         description: Error logs retrieved successfully
- */
-
-/**
- * @swagger
- * /api/operational-insights/maintenance:
- *   get:
- *     summary: Get scheduled maintenance
- *     tags: [Operational Insights]
- *     responses:
- *       200:
- *         description: Maintenance schedule retrieved successfully
- */
-
-/**
- * @swagger
- * /api/operational-insights/dependencies:
- *   get:
- *     summary: Get service dependency status
- *     tags: [Operational Insights]
- *     responses:
- *       200:
- *         description: Dependencies retrieved successfully
- */
-
-/**
- * @swagger
- * /api/operational-insights/resources:
- *   get:
- *     summary: Get resource consumption
- *     tags: [Operational Insights]
- *     responses:
- *       200:
- *         description: Resource utilization retrieved successfully
- */
-
-/**
- * @swagger
- * /api/operational-insights/reports:
- *   get:
- *     summary: Get operational reports
- *     tags: [Operational Insights]
- *     responses:
- *       200:
- *         description: Operational reports retrieved successfully
+ *         description: Bookmark analytics
  */
 
 export default {};
