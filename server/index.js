@@ -54,7 +54,6 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { notificationAnalyticsRepository } from './repositories/notificationAnalyticsRepository.js';
 import { notificationPreferencesRepository } from './repositories/notificationPreferencesRepository.js';
 import notificationsService from './services/notificationsService.js';
-import { studentAuthService } from './services/studentAuthService.js';
 import { initializeSentry, addSentryErrorHandler } from './utils/sentry.js';
 import morgan from 'morgan';
 import { recordCompressionRatio } from './observability/metrics.js';
@@ -284,6 +283,7 @@ app.use(
 
         objectSrc: ["'none'"],
 
+
         // ✅ CRITICAL FIX: Missing directives added below
         baseUri: ["'self'"],                                    // Prevents <base> tag injection
         frameAncestors: ["'none'"],                             // Prevents clickjacking
@@ -294,6 +294,24 @@ app.use(
         frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'], // Restricts iframe sources
         childSrc: ["'none'"],                                   // Restricts child browsing contexts
         upgradeInsecureRequests: [],                            // Upgrades HTTP to HTTPS
+
+        baseUri: ["'self'"],
+
+        frameAncestors: ["'none'"],
+
+        formAction: ["'self'"],
+
+        upgradeInsecureRequests: [],
+
+        workerSrc: ["'self'", 'blob:'],
+
+        manifestSrc: ["'self'"],
+
+        mediaSrc: ["'self'"],
+
+        frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'],
+
+        childSrc: ["'none'"],
 
         reportUri: '/api/v1/csp-violation',
       },
@@ -329,6 +347,7 @@ app.use(
     },
   })
 );
+
 
 
 app.use(
@@ -447,6 +466,8 @@ const defaultContent = {
   activityEvents: {},
   coreTeam: [],
 };
+
+
 
 // â”€â”€ File Upload Configuration â”€â”€
 const UPLOADS_DIR = path.join(__dirname, 'uploads');

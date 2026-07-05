@@ -128,9 +128,9 @@ const links = [
     icon: 'Target',
   },
   {
-    to: '/dashboard/settings',
-    label: 'Platform Settings',
-    icon: 'Settings',
+    to: '/dashboard/sso-invites',
+    label: 'SSO Invites',
+    icon: 'UserPlus',
     requiredScope: 'settings:admin',
   },
 ];
