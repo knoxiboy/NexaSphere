@@ -5,7 +5,6 @@ import { auditLogController } from '../controllers/auditLogController.js';
 import * as eventsController from '../controllers/eventsController.js';
 import * as activityEventsController from '../controllers/activityEventsController.js';
 import { adminAuthMiddleware } from '../middleware/adminAuthMiddleware.js';
-import * as coreTeamController from '../controllers/coreTeamController.js';
 import * as eventRegistrationController from '../controllers/eventRegistrationController.js';
 import * as usersController from '../controllers/usersController.js';
 import { usersRepository } from '../repositories/usersRepository.js';
@@ -13,7 +12,6 @@ import * as attendanceController from '../controllers/attendanceController.js';
 import * as eventAnalyticsController from '../controllers/eventAnalyticsController.js';
 import { adminAuditMiddleware, attachOldState } from '../middleware/adminAuditMiddleware.js';
 import { eventsRepository } from '../repositories/eventsRepository.js';
-import { coreTeamService } from '../services/coreTeamService.js';
 import { authRateLimiter, protectedActionRateLimiter } from '../middleware/authRateLimiter.js';
 import { eventRegistrationLimiter } from '../middleware/rateLimiter.js';
 import { portfolioRepository } from '../repositories/portfolioRepository.js';
@@ -228,29 +226,6 @@ router.delete(
   attachOldState((req) => eventsRepository.getById(req.params.id)),
   adminAuditMiddleware,
   eventsController.adminDeleteEvent
-);
-
-// Core team management APIs
-router.get(
-  '/api/admin/core-team/members',
-  adminAuthMiddleware.requireScope('settings:admin'),
-  coreTeamController.adminListCoreTeamMembers
-);
-router.post(
-  '/api/admin/core-team/members',
-  adminAuthMiddleware.requireScope('settings:admin'),
-  adminAuditMiddleware,
-  coreTeamController.adminAddCoreTeamMember
-);
-router.delete(
-  '/api/admin/core-team/members/:id',
-  adminAuthMiddleware.requireScope('settings:admin'),
-  attachOldState(async (req) => {
-    const members = await coreTeamService.listMembers();
-    return members.find((m) => String(m.id) === String(req.params.id));
-  }),
-  adminAuditMiddleware,
-  coreTeamController.adminDeleteCoreTeamMember
 );
 
 // Subscription management APIs
