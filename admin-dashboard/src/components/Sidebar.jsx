@@ -49,6 +49,12 @@ const links = [
     icon: 'Users',
     requiredScope: 'settings:admin',
   },
+  {
+    to: '/dashboard/roles',
+    label: 'User Roles',
+    icon: 'Shield',
+    requiredScope: 'settings:admin',
+  },
   { to: '/dashboard/membership', label: 'Membership', icon: 'FileText' },
   { to: '/dashboard/recruitment', label: 'Recruitment', icon: 'UserPlus' },
   { to: '/dashboard/certificates', label: 'Certificates', icon: 'Award' },
