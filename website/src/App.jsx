@@ -49,12 +49,8 @@ const isPlaywright =
   typeof window !== 'undefined' && window.navigator.userAgent.includes('Playwright');
 
 import { BookmarkProvider } from './context/BookmarkContext';
-import { useStudentAuth } from './context/StudentAuthContext';
-import ErrorBoundary from './components/common/ErrorBoundary';
-import { WalkthroughOverlay } from './components/walkthrough/WalkthroughOverlay';
-import { useWalkthroughStore } from './store/useWalkthroughStore';
-import { useAnalytics } from './hooks/useAnalytics';
-import { SessionRecordingProvider } from './context/SessionRecordingProvider';
+import { StudentAuthProvider, useStudentAuth } from './context/StudentAuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy-loaded heavy pages
 const RecruitmentPage = lazy(() => import('./pages/recruitment/RecruitmentPage'));
