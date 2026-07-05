@@ -177,6 +177,17 @@ export const activityAuthRateLimiter = rateLimit({
     });
   },
 });
+// Sync rate limiter — 10 requests per IP per 15 minutes
+export const syncRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: true,
+  handler: createLimiterHandler(
+    'Sync rate limit exceeded',
+    'Too many sync requests from this IP, please try again later.'
+  ),
+});
 
 // Portfolio update rate limiter — 10 requests per IP per 15 minutes
 export const portfolioRateLimiter = rateLimit({
@@ -232,14 +243,6 @@ export const searchRateLimiter = rateLimit({
 // Throws immediately if any limiter failed to initialise, preventing the silent
 // "undefined middleware" failure mode that this issue was created to fix.
 // ---------------------------------------------------------------------------
-export const syncRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: true,
-  store: createRateLimitStore('rate-limit:sync:'),
-  handler: createLimiterHandler('Sync rate limit exceeded', 'Too many sync requests.'),
-});
 
 export function validateLimiters() {
   const limiters = {

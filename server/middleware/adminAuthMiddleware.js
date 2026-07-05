@@ -427,9 +427,6 @@ async function login(req, res) {
         scopes,
         secret,
         backupCodes,
-        ip,
-        userAgent,
-        suspicious,
       });
 
       return res.status(202).json({
@@ -453,7 +450,7 @@ async function login(req, res) {
       suspicious,
     });
 
-    return res.status(200).json({
+    return res.status(202).json({
       requiresTwoFactor: true,
       challengeToken,
       expiresAt: Date.now() + PENDING_2FA_TTL_MS,

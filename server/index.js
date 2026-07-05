@@ -5,6 +5,7 @@ import { setTraceIdResolver } from './utils/logContext.js';
 import { getActiveTraceId } from './observability/tracing.js';
 import helmet from 'helmet';
 import express from 'express';
+import morgan from 'morgan';
 import cors from 'cors';
 import csrf from 'csurf';
 import fs, { promises as fsp } from 'fs';
@@ -320,11 +321,6 @@ app.use(
     },
   })
 );
- feat/i18n-localization-1397
- feat/i18n-localization-1397
-
- fix/csp-helmet-config-1475
- main
 
 
 app.use(
@@ -356,6 +352,7 @@ app.use(
     maxAge: 86400,
   })
 );
+
 app.options('*', cors());
 
 app.use(enhancedTracingMiddleware);
@@ -363,12 +360,12 @@ app.use(enhancedTracingMiddleware);
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(xssSanitizer);
+const useStructuredHttpLog = process.env.USE_STRUCTURED_HTTP_LOG === 'true';
 if (useStructuredHttpLog) {
   app.use(apiLogger);
 } else {
   app.use(morgan('combined'));
 }
-app.use(apiLogger);
 app.use(performanceMonitor);
 app.use(cookieParser());
 
@@ -444,6 +441,7 @@ const defaultContent = {
   activityEvents: {},
   coreTeam: [],
 };
+
 
 // â”€â”€ File Upload Configuration â”€â”€
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
