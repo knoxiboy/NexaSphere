@@ -81,6 +81,7 @@ const StatusPage = lazy(() => import('./pages/StatusPage'));
 const LiveStreamPage = lazy(() => import('./pages/streaming/LiveStreamPage'));
 const NotificationHistoryPage = lazy(() => import('./pages/notifications/NotificationHistoryPage'));
 const SponsorsPage = lazy(() => import('./pages/sponsors/SponsorsPage'));
+const SearchPage = lazy(() => import('./pages/search/SearchPage'));
 
 /* â”€â”€ Page wipe transition â”€â”€ */
 const Wipe = memo(function Wipe({ on: wipeOn, ph }) {
@@ -445,6 +446,7 @@ function MainRouter({
           onApply={openApply}
           onJoin={openJoin}
           onToggleBookmarks={() => setBookmarksOpen((prev) => !prev)}
+          onSearchToggle={() => setSearchOpen(true)}
         />
       )}
 
@@ -842,21 +844,15 @@ function MainRouter({
               }
             />
 
-            {/* ── Live Q&A / Polling ── */}
+            {/* ── Search Page ── */}
             <Route
-              path="/qa-poll"
+              path="/search"
               element={
-                <PageIn k="qa-poll">
-                  <LiveQa onBack={onBackHome} />
-                </PageIn>
-              }
-            />
-            <Route
-              path="/qa-poll/:eventId"
-              element={
-                <PageIn k="qa-poll-event">
-                  <LiveQa onBack={() => nav('/qa-poll')} />
-                </PageIn>
+                <ErrorBoundary>
+                  <PageIn k="search">
+                    <SearchPage />
+                  </PageIn>
+                </ErrorBoundary>
               }
             />
 
