@@ -32,10 +32,22 @@ function parseBearer(authHeader) {
   return authHeader.slice(7).trim();
 }
 
+/**
+ * Initialize Socket.IO
+ * @param {Object} httpServer - HTTP server instance
+ */
+export function resolveSocketCorsOrigin(env = process.env) {
+  if (env.FRONTEND_URL) return env.FRONTEND_URL;
+  if (env.NODE_ENV === 'production') {
+    throw new Error('FRONTEND_URL must be set in production for Socket.IO CORS');
+  }
+  return 'http://localhost:5173';
+}
+
 export function initializeSocketIO(httpServer) {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      origin: resolveSocketCorsOrigin(),
       credentials: true,
     },
     reconnection: true,
