@@ -441,8 +441,6 @@ const defaultContent = {
   coreTeam: [],
 };
 
-
-
 // â”€â”€ File Upload Configuration â”€â”€
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 try {
