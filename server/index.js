@@ -55,10 +55,7 @@ import { notificationAnalyticsRepository } from './repositories/notificationAnal
 import { notificationPreferencesRepository } from './repositories/notificationPreferencesRepository.js';
 import notificationsService from './services/notificationsService.js';
 import { initializeSentry, addSentryErrorHandler } from './utils/sentry.js';
-import morgan from 'morgan';
 import { recordCompressionRatio } from './observability/metrics.js';
-import { logEvent } from './controllers/analyticsController.js';
-import healthDashboardRouter from './routes/healthDashboard.js';
 import {
   apiRateLimiter,
   formRateLimiter,
@@ -422,7 +419,7 @@ app.use('/api', portfolioAnalyticsRouter);
 app.use('/api', portfolioRouter);
 app.use('/api', recoveryRouter);
 app.use('/api/faqs', faqRouter);
-app.use('/', notificationsRouter);
+app.use('/api', notificationsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api', learningPathRouter);
 app.use('/', syncRouter);

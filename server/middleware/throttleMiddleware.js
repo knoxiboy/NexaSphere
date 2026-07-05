@@ -26,6 +26,7 @@ const DELAY_90_MS       = 500;
 let redisClient = null;
 
 async function getRedis() {
+  if (!process.env.REDIS_URL) return null;
   if (redisClient) return redisClient;
   try {
     if (process.env.REDIS_URL) {

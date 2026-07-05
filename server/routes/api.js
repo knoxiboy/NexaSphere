@@ -27,21 +27,29 @@ import * as subscriptionsController from '../controllers/subscriptionsController
 import * as portfolioAnalyticsController from '../controllers/portfolioAnalyticsController.js';
 import { achievementSchema } from '../validators/portfolioSchemas.js';
 import { auditLogRepository } from '../repositories/auditLogRepository.js';
-<<<<<<< HEAD
 import announcementPriorityRouter from "./announcementPriority.js";
 import eventConflictRouter from "./eventConflict.js";
 import waitlistRoutes from "./waitlist.js";
-=======
 import * as localAuthController from '../controllers/localAuthController.js';
->>>>>>> upstream/main
+
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
 const bookmarkRoutes = require("./bookmark");
-
-const router = Router();
 const recommendationEngine = require("./recommendationEngine");
-
 const operationalInsightsRoutes = require("./operationalInsights");
 
+import * as recommendationsController from '../controllers/recommendationsController.js';
+import * as gamificationController from '../controllers/gamificationController.js';
+import multer from 'multer';
+const router = Router();
+
+router.use(rateLimitAdminRoutes);
+router.use(throttleMiddleware);
+
+const upload = multer({
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 // Public
 router.get('/api/dashboard/leaderboard', gamificationController.getLeaderboard);
 router.post(
@@ -312,14 +320,10 @@ router.get(
   portfolioAnalyticsController.getPortfolioAnalytics
 );
 
-<<<<<<< HEAD
 router.post(
   '/api/portfolio/:username/visit',
   portfolioAnalyticsController.recordPortfolioVisit
 );
-=======
-router.post('/api/portfolio/:username/visit', portfolioAnalyticsController.recordPortfolioVisit);
->>>>>>> upstream/main
 
 router.get(
   '/api/portfolio/:username/monthly-report',
@@ -412,11 +416,10 @@ router.post('/api/admin/impersonate/stop', adminAuthMiddleware.requireAdmin, (re
 router.get('/api/admin/impersonate/status', adminAuthMiddleware.requireAdmin, (req, res) => {
   const active = impersonationService.getActive(req.adminSession.token);
   return res.json({ impersonating: !!active, user: active?.targetUser || null });
-<<<<<<< HEAD
 });
 router.use(
-"/api/announcements",
-announcementPriorityRouter
+  "/api/announcements",
+  announcementPriorityRouter
 );
 
 router.use("/api/events", eventConflictRouter);
@@ -424,15 +427,15 @@ router.use("/api/events", eventConflictRouter);
 router.use(
   "/api/admin/waitlist",
   waitlistRoutes
-=======
-}); // Audit Log Viewer APIs
+);
+
+// Audit Log Viewer APIs
 router.get('/api/admin/audit-logs', adminAuthMiddleware.requireAdmin, auditLogController.listLogs);
 
 router.get(
   '/api/admin/audit-logs/stats',
   adminAuthMiddleware.requireAdmin,
   auditLogController.getStats
->>>>>>> upstream/main
 );
 router.use(
   "/recommendations",
