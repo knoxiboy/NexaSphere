@@ -7,7 +7,22 @@ import { sendEmail } from './emailService.js';
 import { bulkOperationsQueue } from './queueService.js';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import { Queue } from 'bullmq';
+import IORedis from 'ioredis';
 import logger from '../utils/logger.js';
+
+let connection;
+if (process.env.REDIS_URL) {
+  connection = new IORedis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null, // Required by BullMQ
+  });
+}
+
+export const bulkOperationsQueueName = 'bulk-operations';
+
+export const bulkOperationsQueue = connection
+  ? new Queue(bulkOperationsQueueName, { connection })
+  : null;
 
 class BulkOperationsService {
   constructor() {
@@ -192,102 +207,70 @@ class BulkOperationsService {
                 `UPDATE users 
                  SET display_name = $1, username = $2, role = $3, admin_roles = $3, status = $4, major = $5, year = $6, tags = $7, updated_at = NOW()
                  WHERE id = $8 RETURNING *`,
-                [
-                  user.display_name || existing.display_name,
-                  user.username,
-                  user.role,
-                  user.status,
-                  user.major || null,
-                  user.year || null,
-                  updatedTags,
-                  existing.id,
-                ]
-              );
-              newState.push({
-                type: 'update',
-                table: 'users',
-                key: existing.id,
-                data: updatedRows[0],
-              });
-            } else {
-              // Create new user with password
-              const id = `user-${crypto.randomUUID()}`;
-              const updatedTags = JSON.stringify(user.tags);
-              const plainPassword = crypto.randomBytes(4).toString('hex'); // 8 char temp password
-              const passwordHash = await bcrypt.hash(plainPassword, 10);
+              [
+                user.display_name || existing.display_name,
+                user.username,
+                user.role,
+                user.status,
+                user.major || null,
+                user.year || null,
+                updatedTags,
+                existing.id,
+              ]
+            );
+            newState.push({
+              type: 'update',
+              table: 'users',
+              key: existing.id,
+              data: updatedRows[0],
+            });
+          } else {
+            // Create new user with password
+            const id = `user-${crypto.randomUUID()}`;
+            const updatedTags = JSON.stringify(user.tags);
+            const plainPassword = crypto.randomBytes(4).toString('hex'); // 8 char temp password
+            const passwordHash = await bcrypt.hash(plainPassword, 10);
 
-              const { rows: insertedRows } = await client.query(
-                `INSERT INTO users (id, username, display_name, email, role, admin_roles, status, major, year, tags, password_hash, created_at, updated_at)
+            const { rows: insertedRows } = await client.query(
+              `INSERT INTO users (id, username, display_name, email, role, admin_roles, status, major, year, tags, password_hash, created_at, updated_at)
                  VALUES ($1, $2, $3, $4, $5, $5, $6, $7, $8, $9, $10, NOW(), NOW()) RETURNING *`,
-                [
-                  id,
-                  user.username,
-                  user.display_name,
-                  user.email,
-                  user.role,
-                  user.status,
-                  user.major || null,
-                  user.year || null,
-                  updatedTags,
-                  passwordHash,
-                ]
-              );
+              [
+                id,
+                user.username,
+                user.display_name,
+                user.email,
+                user.role,
+                user.status,
+                user.major || null,
+                user.year || null,
+                updatedTags,
+                passwordHash,
+              ]
+            );
 
-              oldState.push({ type: 'insert', table: 'users', key: id, data: null });
-              newState.push({ type: 'insert', table: 'users', key: id, data: insertedRows[0] });
-
-              // Add to welcome email list (to be sent post-COMMIT)
-              emailsToSend.push({
-                email: user.email,
-                displayName: user.display_name,
-                plainPassword,
+            // Email the user their temporary password
+            try {
+              await sendEmail({
+                to: user.email,
+                subject: 'Welcome to NexaSphere!',
+                templateName: 'generic',
+                data: {
+                  name: user.display_name || 'Student',
+                  message: `Your account has been created. You can log in using your email and this temporary password: ${plainPassword} \nPlease change it after your first login.`,
+                },
               });
+            } catch (emailErr) {
+              console.error(`Failed to send welcome email to ${user.email}:`, emailErr.message);
             }
-            processed++;
-            this.updateJobProgress(jobId, processed, []);
+
+            oldState.push({ type: 'insert', table: 'users', key: id, data: null });
+            newState.push({ type: 'insert', table: 'users', key: id, data: insertedRows[0] });
           }
-
-          // Commit transaction
-          await client.query('COMMIT');
-        } catch (txnErr) {
-          // If transaction fails, attempt to rollback
-          try {
-            await client.query('ROLLBACK');
-          } catch (rollbackErr) {
-            console.error('Failed to rollback transaction:', rollbackErr.message);
-          }
-          throw txnErr;
-        }
-      });
-    } catch (err) {
-      logger.error(`[bulkOperationsService] Bulk import failed: ${err.message}`);
-      jobErrors.push(`Bulk import transaction failed - ${err.message}`);
-
-      this.updateJobProgress(
-        jobId,
-        0,
-        jobErrors.map((e) => ({ message: e })),
-        'failed',
-        {
-          successful: 0,
-          total: preview.length,
-          errorsCount: jobErrors.length,
-        }
-      );
-      throw err;
-    }
-
-    // Log to audit log
-    if (oldState.length > 0 || newState.length > 0) {
-      try {
-        await auditLogRepository.insertAuditLog({
-          adminId,
-          action: 'BULK_USER_IMPORT',
-          oldState: { operations: oldState },
-          newState: { operations: newState },
         });
-      } catch (auditErr) {
-        logger.error(`[bulkOperationsService] Failed to insert import audit log: ${auditErr.message}`);
+        processed++;
+        this.updateJobProgress(job.id, processed, []);
+      } catch (err) {
+        jobErrors.push(`Row ${user.row}: Database error - ${err.message}`);
       }
     }
 

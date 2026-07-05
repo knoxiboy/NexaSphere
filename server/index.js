@@ -18,6 +18,15 @@ import crypto from 'crypto';
 import { adminAuthMiddleware } from './middleware/adminAuthMiddleware.js';
 import analyticsRouter from './routes/analytics.js';
 import apiRouter from './routes/api.js';
+import formSubmissionsRouter from './routes/forms.js';
+import { logEvent } from './controllers/analyticsController.js';
+import healthDashboardRouter from './routes/healthDashboard.js';
+import complianceRouter from './routes/compliance.js';
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { ExpressAdapter } from '@bull-board/express';
+import { eventRemindersQueue } from './services/queueService.js';
+import { slackIntegrationService } from './services/slackIntegrationService.js';
 import { initializeSocketIO } from './config/socket.js';
 import adminStreamRouter from './routes/adminStream.js';
 import documentationRouter from './routes/documentation.js';
@@ -258,36 +267,15 @@ app.use(
         ],
 
         objectSrc: ["'none'"],
-
-        // ✅ CRITICAL FIX: Missing directives added below
-        baseUri: ["'self'"],                                    // Prevents <base> tag injection
-        frameAncestors: ["'none'"],                             // Prevents clickjacking
-        formAction: ["'self'"],                                 // Prevents form submission to external sites
-        workerSrc: ["'self'", 'blob:'],                         // Restricts web worker sources
-        manifestSrc: ["'self'"],                                // Restricts manifest sources
-        mediaSrc: ["'self'"],                                   // Restricts media sources
-        frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'], // Restricts iframe sources
-        childSrc: ["'none'"],                                   // Restricts child browsing contexts
-        upgradeInsecureRequests: [],                            // Upgrades HTTP to HTTPS
-
         baseUri: ["'self'"],
-
         frameAncestors: ["'none'"],
-
         formAction: ["'self'"],
-
-        upgradeInsecureRequests: [],
-
         workerSrc: ["'self'", 'blob:'],
-
         manifestSrc: ["'self'"],
-
         mediaSrc: ["'self'"],
-
         frameSrc: ["'self'", 'https://challenges.cloudflare.com', 'https://maps.google.com'],
-
         childSrc: ["'none'"],
-
+        upgradeInsecureRequests: [],
         reportUri: '/api/v1/csp-violation',
       },
     },
@@ -323,11 +311,10 @@ app.use(
   })
 );
 
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (origin && allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       if (process.env.NODE_ENV === 'test') {
@@ -353,7 +340,6 @@ app.use(
     maxAge: 86400,
   })
 );
-
 app.options('*', cors());
 
 app.use(enhancedTracingMiddleware);
@@ -361,12 +347,7 @@ app.use(enhancedTracingMiddleware);
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(xssSanitizer);
-const useStructuredHttpLog = process.env.USE_STRUCTURED_HTTP_LOG === 'true';
-if (useStructuredHttpLog) {
-  app.use(apiLogger);
-} else {
-  app.use(morgan('combined'));
-}
+app.use(apiLogger);
 app.use(performanceMonitor);
 app.use(cookieParser());
 
@@ -445,7 +426,6 @@ const defaultContent = {
   activityEvents: {},
   coreTeam: [],
 };
-
 
 // â”€â”€ File Upload Configuration â”€â”€
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -1196,7 +1176,6 @@ app.use('/api/compliance', complianceRouter);
 // Admin Analytics & Metrics (mounted with admin auth)
 app.use('/api/admin/analytics', adminAuth, analyticsRouter);
 app.use('/api/admin/metrics', adminAuth, adminStreamRouter);
-app.use('/api/admin/scheduled-tasks', adminAuth, scheduledTasksRouter);
 
 // Setup Bull Board for background job monitoring
 const serverAdapter = new ExpressAdapter();
@@ -1212,13 +1191,15 @@ app.get('/api/auth/google', studentAuthController.googleAuth);
 app.get('/api/auth/google/callback', studentAuthController.googleCallback);
 app.get('/api/auth/github', studentAuthController.githubAuth);
 app.get('/api/auth/github/callback', studentAuthController.githubCallback);
+app.get('/api/auth/github/portfolio', studentAuthController.githubPortfolioAuth);
+app.get('/api/auth/github/portfolio/callback', studentAuthController.githubPortfolioCallback);
 app.get('/api/auth/me', requireStudentAuth, studentAuthController.getMe);
 app.post('/api/auth/theme', requireStudentAuth, studentAuthController.updateTheme);
 app.post('/api/auth/logout', studentAuthController.logout);
 
 // Student Profile Endpoints
-app.get('/api/auth/profile',       requireStudentAuth, studentAuthController.getProfile);
-app.put('/api/auth/profile',       requireStudentAuth, studentAuthController.updateProfile);
+app.get('/api/auth/profile', requireStudentAuth, studentAuthController.getProfile);
+app.put('/api/auth/profile', requireStudentAuth, studentAuthController.updateProfile);
 app.get('/api/auth/registrations', requireStudentAuth, studentAuthController.getRegistrations);
 
 // Slack Integration Endpoints
@@ -1469,11 +1450,14 @@ function requireNotificationPrefAuth(req, res, next) {
       if (err2 || !req.studentUser) {
         return res.status(401).json({ error: 'Unauthorized: Authentication required' });
       }
-      const userId = req.method === 'GET' ? (req.query.userId || 'global') : (req.body.userId || 'global');
+      const userId =
+        req.method === 'GET' ? req.query.userId || 'global' : req.body.userId || 'global';
       if (req.studentUser.sub === userId || req.studentUser.id === userId) {
         return next();
       }
-      return res.status(403).json({ error: 'Forbidden: You cannot access or modify other users\' preferences' });
+      return res
+        .status(403)
+        .json({ error: "Forbidden: You cannot access or modify other users' preferences" });
     });
   });
 }
@@ -1648,8 +1632,16 @@ app.put(
   requireMentorshipAuth,
   mentorshipController.updateMentorshipStatus
 );
-app.post('/api/mentorship/requests/:id/sessions', requireStudentAuth, mentorshipController.logSession);
-app.get('/api/mentorship/requests/:id/sessions', requireStudentAuth, mentorshipController.listSessions);
+app.post(
+  '/api/mentorship/requests/:id/sessions',
+  requireStudentAuth,
+  mentorshipController.logSession
+);
+app.get(
+  '/api/mentorship/requests/:id/sessions',
+  requireStudentAuth,
+  mentorshipController.listSessions
+);
 app.post('/api/mentorship/buddy-pairs', requireStudentAuth, mentorshipController.createBuddyPair);
 app.get('/api/mentorship/buddy-pairs', requireStudentAuth, mentorshipController.listBuddyPairs);
 app.get('/api/admin/mentorships', adminAuth, mentorshipController.adminListAll);
@@ -1714,11 +1706,9 @@ if (process.env.NODE_ENV !== 'test') {
       server = app.listen(port, () => {
         console.log(`NexaSphere server listening on http://localhost:${port}`);
         schedulerService.init();
-
-        // Register Learning Path Nudges (Runs daily)
-        schedulerService.schedule('0 10 * * *', async () => {
-          await learningPathService.runNudgeJob();
-        });
+      });
+      server.on('error', (err) => {
+        console.error('SERVER LISTEN ERROR:', err.code, err.message);
       });
       initializeSocketIO(server);
     });
