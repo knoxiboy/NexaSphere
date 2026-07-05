@@ -60,6 +60,12 @@ const links = [
   { to: '/dashboard/certificates', label: 'Certificates', icon: 'Award' },
   { to: '/dashboard/announcements', label: 'Announcements', icon: 'Megaphone' },
   {
+    to: '/dashboard/banners',
+    label: 'Banners (Hero)',
+    icon: 'Image',
+    requiredScope: 'settings:admin',
+  },
+  {
     to: '/dashboard/portfolios',
     label: 'Portfolios',
     icon: 'FileText',
