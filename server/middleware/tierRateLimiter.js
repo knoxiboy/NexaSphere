@@ -5,6 +5,7 @@ import { _getRedisClient } from '../services/rateLimitService.js';
 const memoryBuckets = new Map(); // key -> { tokens, lastUpdated }
 const memoryViolations = new Map(); // key -> { count, expiresAt }
 const memoryBlocked = new Map(); // key -> expiresAt
+const MEMORY_BUCKET_TTL_MS = 60 * 60 * 1000;
 
 // Base rate limiting configurations per tier
 const CONFIG = {
@@ -53,13 +54,15 @@ function resolveEndpointConfig(path, tier) {
 /**
  * Clean up expired memory entries to prevent memory leaks
  */
-function pruneMemoryStores() {
-  const now = Date.now();
+export function pruneMemoryStores(now = Date.now()) {
   for (const [key, val] of memoryViolations.entries()) {
     if (now > val.expiresAt) memoryViolations.delete(key);
   }
   for (const [key, expiresAt] of memoryBlocked.entries()) {
     if (now > expiresAt) memoryBlocked.delete(key);
+  }
+  for (const [key, bucket] of memoryBuckets.entries()) {
+    if (now - bucket.lastUpdated > MEMORY_BUCKET_TTL_MS) memoryBuckets.delete(key);
   }
 }
 

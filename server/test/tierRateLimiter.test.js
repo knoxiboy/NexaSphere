@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { tierRateLimiter } from '../middleware/tierRateLimiter.js';
+import { pruneMemoryStores, tierRateLimiter } from '../middleware/tierRateLimiter.js';
 
 test('Tier-Based Rate Limiting & Backoff Middleware Tests', async (t) => {
   await t.test('1. Guest rate limit checks (IP-based keying & headers)', async () => {
@@ -88,7 +88,44 @@ test('Tier-Based Rate Limiting & Backoff Middleware Tests', async (t) => {
     assert.equal(headers['X-RateLimit-Remaining'], '9');
   });
 
-  await t.test('3. Exponential Backoff Block checks', async () => {
+  await t.test('3. Prunes stale in-memory token buckets', async () => {
+    const middleware = tierRateLimiter({ capacity: 2, refillRate: 0, baseCooldown: 2 });
+    const req = { ip: '203.0.113.25', adminSession: null, user: null };
+
+    const createRes = () => ({
+      headers: {},
+      setHeader(name, val) {
+        this.headers[name] = val.toString();
+      },
+      status(code) {
+        this.statusCode = code;
+        return this;
+      },
+      json(data) {
+        this.jsonData = data;
+        return this;
+      },
+    });
+
+    let nextCalled = false;
+    await middleware(req, createRes(), () => {
+      nextCalled = true;
+    });
+    assert.equal(nextCalled, true);
+
+    pruneMemoryStores(Date.now() + 61 * 60 * 1000);
+
+    const res = createRes();
+    nextCalled = false;
+    await middleware(req, res, () => {
+      nextCalled = true;
+    });
+
+    assert.equal(nextCalled, true);
+    assert.equal(res.headers['X-RateLimit-Remaining'], '1');
+  });
+
+  await t.test('4. Exponential Backoff Block checks', async () => {
     const middleware = tierRateLimiter({ capacity: 1, refillRate: 0.1, baseCooldown: 2 });
     const req = { ip: '10.0.0.99', adminSession: null, user: null };
 
