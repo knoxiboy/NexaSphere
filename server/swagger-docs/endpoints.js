@@ -475,62 +475,14 @@
 
 /**
  * @swagger
- * /api/analytics/overview:
+ * /api/notification-preferences/{userId}:
  *   get:
- *     summary: Get platform dashboard overview
+ *     summary: Get notification preferences
  *     tags:
- *       - Platform Analytics
- *     responses:
- *       200:
- *         description: Dashboard overview retrieved successfully
- */
-
-/**
- * @swagger
- * /api/analytics/users:
- *   get:
- *     summary: Get user analytics
- *     tags:
- *       - Platform Analytics
- *     responses:
- *       200:
- *         description: User analytics retrieved successfully
- */
-
-/**
- * @swagger
- * /api/analytics/events:
- *   get:
- *     summary: Get event analytics
- *     tags:
- *       - Platform Analytics
- *     responses:
- *       200:
- *         description: Event analytics retrieved successfully
- */
-
-/**
- * @swagger
- * /api/analytics/clubs:
- *   get:
- *     summary: Get club analytics
- *     tags:
- *       - Platform Analytics
- *     responses:
- *       200:
- *         description: Club analytics retrieved successfully
- */
-
-/**
- * @swagger
- * /api/analytics/portfolios:
- *   get:
- *     summary: Get portfolio analytics
- *     tags:
- *       - Platform Analytics
- *     responses:
- *       200:
- *         description: Portfolio analytics retrieved successfully
+ *       - Notification Preferences
+ *     parameters:
+ *       - in: path
+ *         name: userId
  * /api/portfolio/{username}/analytics:
  *   get:
  *     summary: Get portfolio analytics
@@ -566,19 +518,7 @@
  *           type: string
  *     responses:
  *       200:
- *         description: File deleted successfully
- */
-
-/**
- * @swagger
- * /api/media/search:
- *   get:
- *     summary: Search uploaded files
- *     tags:
- *       - Media Management
- *     parameters:
- *       - in: query
- *         name: q
+ *         description: Notification preferences returned successfully
  *         description: Visit recorded successfully
  *       404:
  *         description: Portfolio not found
@@ -613,26 +553,41 @@
 
 /**
  * @swagger
- * /api/analytics/growth:
- *   get:
- *     summary: Get platform growth analytics
+ * /api/notification-preferences/{userId}:
+ *   put:
+ *     summary: Update notification preferences
  *     tags:
- *       - Platform Analytics
+ *       - Notification Preferences
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
  *     responses:
  *       200:
- *         description: Growth analytics retrieved successfully
+ *         description: Preferences updated successfully
  */
 
 /**
  * @swagger
- * /api/analytics/export:
+ * /api/notification-preferences/{userId}/history:
  *   get:
- *     summary: Export analytics report
+ *     summary: Get notification history
  *     tags:
- *       - Platform Analytics
+ *       - Notification Preferences
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Analytics report exported successfully
+ *         description: Notification history returned successfully
+ */
  * ...
  */
 

@@ -116,6 +116,7 @@ import financialsRouter from './routes/financials.js';
 import { schedulerService } from './services/schedulerService.js';
 import feedbackRouter from './routes/feedbackRoutes.js';
 import * as slackController from './controllers/slackController.js';
+import notificationPreferenceRoutes from "./routes/notificationPreference.js";
 
 validateLimiters();
 
@@ -155,6 +156,11 @@ const useStructuredHttpLog = (process.env.LOG_FORMAT || '').toLowerCase() === 'j
 app.set('trust proxy', 1);
 
 initializeSentry(app);
+app.use(compression());
+app.use(
+  "/api/notification-preferences",
+  notificationPreferenceRoutes
+);
 
 // Use compression with fallback (Brotli supported by default in compression v1.8 if zlib supports it)
 // Skip compression for responses smaller than 1KB (1024 bytes)
