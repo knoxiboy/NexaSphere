@@ -26,8 +26,10 @@ import * as subscriptionsController from '../controllers/subscriptionsController
 import * as portfolioAnalyticsController from '../controllers/portfolioAnalyticsController.js';
 import { achievementSchema } from '../validators/portfolioSchemas.js';
 import { auditLogRepository } from '../repositories/auditLogRepository.js';
+import mediaManagementRoutes from "./mediaManagement.js";
 import * as localAuthController from '../controllers/localAuthController.js';
-import * as whiteboardController from '../controllers/whiteboardController.js';
+import draftRecoveryRoutes from "./draftRecovery.js";
+import eventResourceRoutes from "./eventResource.js";
 
 import * as recommendationsController from '../controllers/recommendationsController.js';
 import * as gamificationController from '../controllers/gamificationController.js';
@@ -49,6 +51,7 @@ const upload = multer({
 const bookmarkRoutes = require("./bookmark");
 
 const router = Router();
+const recommendationEngine = require("./recommendationEngine");
 
 const operationalInsightsRoutes = require("./operationalInsights");
 
@@ -415,7 +418,13 @@ router.get(
   adminAuthMiddleware.requireAdmin,
   auditLogController.getStats
 );
+router.use(
+  "/recommendations",
+  recommendationEngine
+);
 
-router.use("/bookmarks", bookmarkRoutes);
+router.use("/api/drafts", draftRecoveryRoutes);
 
+router.use("/api/media", mediaManagementRoutes);
+router.use("/api/resources", eventResourceRoutes);
 export default router;

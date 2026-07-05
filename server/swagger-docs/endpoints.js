@@ -475,109 +475,412 @@
 
 /**
  * @swagger
- * tags:
- *   - name: Bookmarks
- *     description: Universal Bookmark & Favorites Management APIs
- */
-
-/**
- * @swagger
- * /api/bookmarks:
- *   post:
- *     summary: Create a new bookmark
- *     tags:
- *       - Bookmarks
- *     requestBody:
- *       required: true
- *     responses:
- *       201:
- *         description: Bookmark created successfully
- *
+ * /api/media:
  *   get:
- *     summary: Get all bookmarks
+ *     summary: Get all uploaded media
  *     tags:
- *       - Bookmarks
+ *       - Media Management
  *     responses:
  *       200:
- *         description: List of bookmarks
+ *         description: Media files retrieved successfully
  */
 
 /**
  * @swagger
- * /api/bookmarks/{id}:
- *   delete:
- *     summary: Delete a bookmark
+ * /api/media/upload:
+ *   post:
+ *     summary: Upload a media file
  *     tags:
- *       - Bookmarks
+ *       - Media Management
+ *     responses:
+ *       201:
+ *         description: File uploaded successfully
+ */
+
+/**
+ * @swagger
+ * /api/media/{id}:
+ *   delete:
+ *     summary: Delete a media file
+ *     tags:
+ *       - Media Management
  *     parameters:
  *       - in: path
  *         name: id
+ * /api/portfolio/{username}/analytics:
+ *   get:
+ *     summary: Get portfolio analytics
+ *     description: Retrieve portfolio performance analytics including profile visits, engagement, downloads, and project popularity.
+ *     tags:
+ *       - Portfolio
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Portfolio username
+ *     responses:
+ *       200:
+ *         description: Portfolio analytics retrieved successfully
+ *       404:
+ *         description: Portfolio not found
+ */
+/**
+ * @swagger
+ * /api/portfolio/{username}/visit:
+ *   post:
+ *     summary: Record portfolio visit
+ *     description: Records a visit to a user's portfolio for analytics purposes.
+ *     tags:
+ *       - Portfolio
+ *     parameters:
+ *       - in: path
+ *         name: username
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Bookmark deleted successfully
+ *         description: File deleted successfully
  */
 
 /**
  * @swagger
- * /api/bookmarks/search:
+ * /api/media/search:
  *   get:
- *     summary: Search bookmarks
+ *     summary: Search uploaded files
  *     tags:
- *       - Bookmarks
+ *       - Media Management
  *     parameters:
  *       - in: query
  *         name: q
+ *         description: Visit recorded successfully
+ *       404:
+ *         description: Portfolio not found
+ */
+/**
+ * @swagger
+ * /api/portfolio/{username}/monthly-report:
+ *   get:
+ *     summary: Get monthly analytics report
+ *     description: Returns the monthly portfolio performance report.
+ *     tags:
+ *       - Portfolio
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Search results
+ *         description: Matching files returned
+ *         description: Monthly report retrieved successfully
+ *       404:
+ *         description: Portfolio not found
+ */
+/**
+ * @swagger
+ * /api/portfolio/{username}/monthly-report:
+ *   get:
+ *     ...
  */
 
 /**
  * @swagger
- * /api/bookmarks/recent:
+ * /api/media/storage:
  *   get:
- *     summary: Get recently bookmarked items
+ *     summary: Get storage usage statistics
  *     tags:
- *       - Bookmarks
+ *       - Media Management
  *     responses:
  *       200:
- *         description: Recently bookmarked items
+ *         description: Storage usage retrieved successfully
+ * ...
  */
 
 /**
  * @swagger
- * /api/bookmarks/folders:
- *   post:
- *     summary: Create bookmark folder
+ * /api/recommendations/{userId}:
+ *   get:
+ *     summary: Get personalized recommendations
  *     tags:
- *       - Bookmarks
+ *       - Recommendation Engine
+ *     responses:
+ *       200:
+ *         description: Personalized recommendations
+ */
+
+/**
+ * @swagger
+ * /api/recommendations/trending:
+ *   get:
+ *     summary: Get trending recommendations
+ *     tags:
+ *       - Recommendation Engine
+ *     responses:
+ *       200:
+ *         description: Trending recommendations
+ */
+
+/**
+ * @swagger
+ * /api/recommendations/{userId}/feedback:
+ *   post:
+ *     summary: Submit recommendation feedback
+ *     tags:
+ *       - Recommendation Engine
+ *     responses:
+ *       200:
+ *         description: Feedback submitted
+ */
+
+/**
+ * @swagger
+ * /api/recommendations/{userId}/interests:
+ *   put:
+ *     summary: Update user interests
+ *     tags:
+ *       - Recommendation Engine
+ *     responses:
+ *       200:
+ *         description: Interests updated
+ */
+
+/**
+ * @swagger
+ * /api/recommendations/stats:
+ *   get:
+ *     summary: Recommendation analytics
+ *     tags:
+ *       - Recommendation Engine
+ *     responses:
+ *       200:
+ *         description: Recommendation statistics
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Draft Recovery
+ *   description: Draft and Auto-Save Recovery APIs
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{userId}:
+ *   post:
+ *     summary: Create a new draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               module:
+ *                 type: string
+ *                 example: events
+ *               title:
+ *                 type: string
+ *                 example: AI Workshop Draft
+ *               content:
+ *                 type: string
+ *                 example: Event description goes here...
+ *     responses:
+ *       201:
+ *         description: Draft created successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{userId}:
+ *   get:
+ *     summary: Get all drafts for a user
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of user drafts
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{userId}/{draftId}:
+ *   get:
+ *     summary: Get a specific draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft retrieved successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}:
+ *   put:
+ *     summary: Update an existing draft (Auto Save)
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 example: Updated draft content...
+ *     responses:
+ *       200:
+ *         description: Draft updated successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}:
+ *   delete:
+ *     summary: Delete a draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft deleted successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}/restore:
+ *   post:
+ *     summary: Restore latest version of a draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft restored successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}/history:
+ *   get:
+ *     summary: Get version history of a draft
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Version history retrieved successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/{draftId}/sync:
+ *   post:
+ *     summary: Synchronize draft across devices
+ *     tags: [Draft Recovery]
+ *     parameters:
+ *       - in: path
+ *         name: draftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Draft synchronized successfully
+ */
+
+/**
+ * @swagger
+ * /api/drafts/stats:
+ *   get:
+ *     summary: Get draft recovery statistics
+ *     tags: [Draft Recovery]
+ *     responses:
+ *       200:
+ *         description: Draft statistics retrieved successfully
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Event Resources
+ *     description: Event Resource & Inventory Management APIs
+ */
+
+/**
+ * @swagger
+ * /api/event-resources:
+ *   get:
+ *     summary: Get all event resources
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: List of resources
+ *
+ *   post:
+ *     summary: Create a new resource
+ *     tags:
+ *       - Event Resources
  *     requestBody:
  *       required: true
  *     responses:
  *       201:
- *         description: Folder created
- *
- *   get:
- *     summary: Get all bookmark folders
- *     tags:
- *       - Bookmarks
- *     responses:
- *       200:
- *         description: Folder list
+ *         description: Resource created
  */
 
 /**
  * @swagger
- * /api/bookmarks/folders/{id}:
- *   put:
- *     summary: Update bookmark folder
+ * /api/event-resources/{id}:
+ *   get:
+ *     summary: Get resource by ID
  *     tags:
- *       - Bookmarks
+ *       - Event Resources
  *     parameters:
  *       - in: path
  *         name: id
@@ -586,12 +889,26 @@
  *           type: string
  *     responses:
  *       200:
- *         description: Folder updated
+ *         description: Resource details
+ *
+ *   put:
+ *     summary: Update resource
+ *     tags:
+ *       - Event Resources
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Resource updated
  *
  *   delete:
- *     summary: Delete bookmark folder
+ *     summary: Delete resource
  *     tags:
- *       - Bookmarks
+ *       - Event Resources
  *     parameters:
  *       - in: path
  *         name: id
@@ -600,61 +917,151 @@
  *           type: string
  *     responses:
  *       200:
- *         description: Folder deleted
+ *         description: Resource deleted
  */
 
 /**
  * @swagger
- * /api/bookmarks/share/{id}:
+ * /api/event-resources/{id}/reserve:
  *   post:
- *     summary: Share bookmark collection
+ *     summary: Reserve a resource
  *     tags:
- *       - Bookmarks
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
+ *       - Event Resources
  *     responses:
  *       200:
- *         description: Share link generated
+ *         description: Resource reserved
  */
 
 /**
  * @swagger
- * /api/bookmarks/sync:
- *   get:
- *     summary: Synchronize bookmarks across devices
+ * /api/event-resources/{id}/return:
+ *   post:
+ *     summary: Return a reserved resource
  *     tags:
- *       - Bookmarks
+ *       - Event Resources
  *     responses:
  *       200:
- *         description: Sync completed
+ *         description: Resource returned
  */
 
 /**
  * @swagger
- * /api/bookmarks/export:
- *   get:
- *     summary: Export bookmarks
+ * /api/event-resources/{id}/assign:
+ *   post:
+ *     summary: Assign resource to an event
  *     tags:
- *       - Bookmarks
+ *       - Event Resources
  *     responses:
  *       200:
- *         description: Bookmark export completed
+ *         description: Resource assigned
  */
 
 /**
  * @swagger
- * /api/bookmarks/analytics:
- *   get:
- *     summary: Get bookmark analytics
+ * /api/event-resources/{id}/report-damage:
+ *   post:
+ *     summary: Report damaged resource
  *     tags:
- *       - Bookmarks
+ *       - Event Resources
  *     responses:
  *       200:
- *         description: Bookmark analytics
+ *         description: Damage reported
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/{id}/maintenance:
+ *   put:
+ *     summary: Update maintenance status
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: Maintenance status updated
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/{id}/availability:
+ *   get:
+ *     summary: Check resource availability
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: Availability information
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/conflicts/all:
+ *   get:
+ *     summary: Detect resource conflicts
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: Conflict report
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/calendar/availability:
+ *   get:
+ *     summary: View availability calendar
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: Availability calendar
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/{id}/qrcode:
+ *   get:
+ *     summary: Generate QR code for resource
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: QR code generated
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/{id}/history:
+ *   get:
+ *     summary: Get borrow history
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: Borrow history
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/analytics/inventory:
+ *   get:
+ *     summary: Inventory analytics
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: Inventory analytics
+ */
+
+/**
+ * @swagger
+ * /api/event-resources/analytics/utilization:
+ *   get:
+ *     summary: Resource utilization report
+ *     tags:
+ *       - Event Resources
+ *     responses:
+ *       200:
+ *         description: Utilization analytics
  */
 
 export default {};
