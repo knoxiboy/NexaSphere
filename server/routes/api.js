@@ -22,8 +22,12 @@ import { waitingRoomService } from '../services/waitingRoomService.js';
 import { studentAuthService } from '../services/studentAuthService.js';
 import { requireStudentAuth } from '../middleware/studentAuthMiddleware.js';
 import * as sponsorshipsController from '../controllers/sponsorshipsController.js';
-import * as followsController from '../controllers/followsController.js';
-import { requireStudentAuth } from '../middleware/studentAuthMiddleware.js';
+import * as subscriptionsController from '../controllers/subscriptionsController.js';
+import * as portfolioAnalyticsController from '../controllers/portfolioAnalyticsController.js';
+import { achievementSchema } from '../validators/portfolioSchemas.js';
+import { auditLogRepository } from '../repositories/auditLogRepository.js';
+import platformAnalyticsRoutes from "./platformAnalytics.js";
+import * as localAuthController from '../controllers/localAuthController.js';
 
 const bookmarkRoutes = require("./bookmark");
 
@@ -452,5 +456,8 @@ router.get(
   requireStudentAuth,
   followsController.getFollowedUsersActivityFeed
 );
+
+// Platform Analytics APIs
+router.use("/api/analytics", platformAnalyticsRoutes);
 
 export default router;
