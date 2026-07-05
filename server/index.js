@@ -129,6 +129,9 @@ function requiredStrongPassword(name) {
 }
 const ADMIN_EVENT_PASSWORD = requiredStrongPassword('ADMIN_EVENT_PASSWORD');
 const SESSION_SECRET = requiredStrongPassword('SESSION_SECRET');
+const ADMIN_PASSWORD = requiredStrongPassword('ADMIN_PASSWORD');
+
+
 
 const app = express();
 
