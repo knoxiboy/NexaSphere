@@ -35,12 +35,13 @@ import recommendationEngine from './recommendationEngine.js';
 import platformAnalyticsRoutes from './platformAnalytics.js';
 import * as localAuthController from '../controllers/localAuthController.js';
 import * as whiteboardController from '../controllers/whiteboardController.js';
+import bookmarkRoutes from './bookmark.js';
+import operationalInsightsRoutes from './operationalInsights.js';
 
 import * as recommendationsController from '../controllers/recommendationsController.js';
 import * as gamificationController from '../controllers/gamificationController.js';
 import multer from 'multer';
 import * as analyticsController from '../controllers/analyticsController.js';
-
 const router = Router();
 
 router.use(rateLimitAdminRoutes);
@@ -49,7 +50,6 @@ router.use(throttleMiddleware);
 const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
-
 // Public
 router.get('/api/dashboard/leaderboard', gamificationController.getLeaderboard);
 router.post(
@@ -426,7 +426,6 @@ router.get('/api/admin/impersonate/status', adminAuthMiddleware.requireAdmin, (r
   const active = impersonationService.getActive(req.adminSession.token);
   return res.json({ impersonating: !!active, user: active?.targetUser || null });
 });
-
 router.use('/api/announcements', announcementPriorityRouter);
 
 router.use('/api/events', eventConflictRouter);
