@@ -473,4 +473,212 @@
  *                       format: float
  */
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Budget Management
+ *     description: Intelligent Event Budget Planning & Expense Management APIs
+ */
+
+/**
+ * @swagger
+ * /api/budgets:
+ *   get:
+ *     summary: Get all budgets
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Budgets retrieved successfully
+ *
+ *   post:
+ *     summary: Create budget
+ *     tags: [Budget Management]
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Budget created successfully
+ */
+
+/**
+ * @swagger
+ * /api/budgets/{id}:
+ *   get:
+ *     summary: Get budget by ID
+ *     tags: [Budget Management]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Budget retrieved successfully
+ *
+ *   put:
+ *     summary: Update budget
+ *     tags: [Budget Management]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: Budget updated successfully
+ *
+ *   delete:
+ *     summary: Delete budget
+ *     tags: [Budget Management]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Budget deleted successfully
+ */
+
+/**
+ * @swagger
+ * /api/budgets/{id}/expenses:
+ *   get:
+ *     summary: Get budget expenses
+ *     tags: [Budget Management]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Expenses retrieved successfully
+ *
+ *   post:
+ *     summary: Add expense
+ *     tags: [Budget Management]
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Expense added successfully
+ */
+
+/**
+ * @swagger
+ * /api/budgets/{id}/invoice:
+ *   post:
+ *     summary: Upload invoice
+ *     tags: [Budget Management]
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Invoice uploaded successfully
+ */
+
+/**
+ * @swagger
+ * /api/budgets/{id}/approve:
+ *   post:
+ *     summary: Approve expense
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Expense approved successfully
+ */
+
+/**
+ * @swagger
+ * /api/budgets/{id}/remaining:
+ *   get:
+ *     summary: Get remaining budget
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Remaining budget calculated successfully
+ */
+
+/**
+ * @swagger
+ * /api/budgets/{id}/categories:
+ *   get:
+ *     summary: Category-wise spending
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Category-wise spending retrieved
+ */
+
+/**
+ * @swagger
+ * /api/budgets/vendors:
+ *   get:
+ *     summary: Get vendors
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Vendors retrieved successfully
+ *
+ *   post:
+ *     summary: Add vendor
+ *     tags: [Budget Management]
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Vendor added successfully
+ */
+
+/**
+ * @swagger
+ * /api/budgets/reports:
+ *   get:
+ *     summary: Financial reports
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Financial reports retrieved
+ */
+
+/**
+ * @swagger
+ * /api/budgets/alerts:
+ *   get:
+ *     summary: Budget alerts
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Budget alerts retrieved
+ */
+
+/**
+ * @swagger
+ * /api/budgets/export:
+ *   get:
+ *     summary: Export expense statements
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Expense statements exported
+ */
+
+/**
+ * @swagger
+ * /api/budgets/history:
+ *   get:
+ *     summary: Historical budget comparison
+ *     tags: [Budget Management]
+ *     responses:
+ *       200:
+ *         description: Historical comparison retrieved
+ */
+
 export default {};
