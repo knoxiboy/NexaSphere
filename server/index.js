@@ -119,6 +119,8 @@ import activityTimelineRoutes from './routes/activityTimeline.js';
 import { initializeTypesenseCollections } from './config/typesense.js';
 import moderationRouter from './routes/moderation.js';
 import rbacRouter from './routes/rbac.js';
+import apiKeysRouter from './routes/apiKeys.js';
+import { apiKeysRepository } from './repositories/apiKeysRepository.js';
 
 validateLimiters();
 
@@ -435,6 +437,9 @@ app.post('/api/admin/backups/manual', adminAuth, backupController.runManualBacku
 app.post('/api/admin/backups/restore', adminAuth, backupController.runRestore);
 app.get('/api/admin/backups/restore-test-history', adminAuth, backupController.getRestoreHistory);
 app.delete('/api/admin/backups', adminAuth, backupController.deleteBackup);
+
+// API Key Management
+app.use(apiKeysRouter);
 
 const defaultContent = {
   events: [
@@ -1684,7 +1689,11 @@ let server;
 if (process.env.NODE_ENV !== 'test') {
   if (!process.env.VERCEL) {
     const boot = HAS_SUPABASE
-      ? Promise.all([studentUsersRepository.ensureSchema(), slackRepository.ensureSchema()])
+      ? Promise.all([
+          studentUsersRepository.ensureSchema(),
+          slackRepository.ensureSchema(),
+          apiKeysRepository.ensureSchema(),
+        ])
       : ensureContentFile();
     boot.then(() => {
       loadPersistedPushSubscriptions();
