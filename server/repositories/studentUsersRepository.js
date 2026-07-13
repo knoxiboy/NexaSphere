@@ -62,7 +62,17 @@ export const studentUsersRepository = {
         ALTER TABLE student_users ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}'::jsonb;
       `);
       await client.query(`
-        ALTER TABLE student_users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20) DEFAULT NULL;
+        CREATE TABLE IF NOT EXISTS xp_transactions (
+          id SERIAL PRIMARY KEY,
+          student_user_id INTEGER REFERENCES student_users(id) ON DELETE CASCADE,
+          amount INTEGER NOT NULL,
+          action VARCHAR(100) NOT NULL,
+          description TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_xp_transactions_user_id ON xp_transactions(student_user_id)
       `);
     });
   },
@@ -182,17 +192,17 @@ export const studentUsersRepository = {
   async markRecoveryCodeUsed(id) {
     if (!HAS_SUPABASE) return;
     return withDb(async (client) => {
-      await client.query(
-        'UPDATE recovery_codes SET used = true WHERE id = $1',
-        [id]
-      );
+      await client.query('UPDATE recovery_codes SET used = true WHERE id = $1', [id]);
     });
   },
 
-  async awardXP(userId, amount) {
+  async awardXP(userId, amount, action = 'generic', description = null) {
     if (!HAS_SUPABASE) return null;
     return withDb(async (client) => {
-      const userRes = await client.query('SELECT xp, level, badges FROM student_users WHERE id = $1', [userId]);
+      const userRes = await client.query(
+        'SELECT xp, level, badges FROM student_users WHERE id = $1',
+        [userId]
+      );
       if (userRes.rows.length === 0) return null;
 
       const currentXP = userRes.rows[0].xp || 0;
@@ -210,6 +220,12 @@ export const studentUsersRepository = {
       if (newLevel >= 4 && !badges.includes('expert')) badges.push('expert');
       if (newLevel >= 5 && !badges.includes('legend')) badges.push('legend');
 
+      await client.query(
+        `INSERT INTO xp_transactions (student_user_id, amount, action, description)
+         VALUES ($1, $2, $3, $4)`,
+        [userId, amount, action, description]
+      );
+
       const { rows } = await client.query(
         `UPDATE student_users
          SET xp = $1, level = $2, badges = $3::jsonb, updated_at = NOW()
@@ -218,6 +234,20 @@ export const studentUsersRepository = {
         [newXP, newLevel, JSON.stringify(badges), userId]
       );
       return rows[0];
+    });
+  },
+
+  async getXPHistory(userId) {
+    if (!HAS_SUPABASE) return [];
+    return withDb(async (client) => {
+      const { rows } = await client.query(
+        `SELECT id, amount, action, description, created_at
+         FROM xp_transactions
+         WHERE student_user_id = $1
+         ORDER BY created_at DESC`,
+        [userId]
+      );
+      return rows;
     });
   },
 
@@ -274,9 +304,9 @@ export const studentUsersRepository = {
       }
 
       if (setClauses.length === 0) {
-        const { rows } = await client.query(
-          'SELECT * FROM student_users WHERE id = $1 LIMIT 1', [id]
-        );
+        const { rows } = await client.query('SELECT * FROM student_users WHERE id = $1 LIMIT 1', [
+          id,
+        ]);
         return rows[0] || null;
       }
 

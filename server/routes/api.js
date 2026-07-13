@@ -43,7 +43,7 @@ import * as gamificationController from '../controllers/gamificationController.j
 import multer from 'multer';
 import * as analyticsController from '../controllers/analyticsController.js';
 const router = Router();
-const apiAnalyticsRoutes = require("./apiAnalytics");
+const apiAnalyticsRoutes = require('./apiAnalytics');
 
 router.use(rateLimitAdminRoutes);
 router.use(throttleMiddleware);
@@ -51,11 +51,11 @@ router.use(throttleMiddleware);
 const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
-const budgetRoutes = require("./budget");
-const router = Router();
+const budgetRoutes = require('./budget');
 
 // Public
 router.get('/api/dashboard/leaderboard', gamificationController.getLeaderboard);
+router.get('/api/dashboard/xp-history', gamificationController.getXPHistory);
 router.post(
   '/api/dashboard/xp',
   protectedActionRateLimiter,
@@ -431,7 +431,7 @@ router.get('/api/admin/impersonate/status', adminAuthMiddleware.requireAdmin, (r
   return res.json({ impersonating: !!active, user: active?.targetUser || null });
 });
 
-router.use("/budgets", budgetRoutes);
+router.use('/budgets', budgetRoutes);
 router.use('/api/announcements', announcementPriorityRouter);
 
 router.use('/api/events', eventConflictRouter);
@@ -504,6 +504,6 @@ router.get(
 // Platform Analytics APIs
 router.use('/api/analytics', platformAnalyticsRoutes);
 
-router.use("/api-analytics", apiAnalyticsRoutes);
+router.use('/api-analytics', apiAnalyticsRoutes);
 
 export default router;
