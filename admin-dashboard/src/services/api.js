@@ -1786,8 +1786,7 @@ export const api = {
       return fetchWithAuth(`/api/moderation/flags${query ? `?${query}` : ''}`);
     },
     getFlagById: (id) => fetchWithAuth(`/api/moderation/flags/${id}`),
-    approveFlag: (id) =>
-      fetchWithAuth(`/api/moderation/flags/${id}/approve`, { method: 'PUT' }),
+    approveFlag: (id) => fetchWithAuth(`/api/moderation/flags/${id}/approve`, { method: 'PUT' }),
     rejectFlag: (id, reason) =>
       fetchWithAuth(`/api/moderation/flags/${id}/remove`, {
         method: 'PUT',
@@ -1858,7 +1857,18 @@ export const api = {
       return fetchWithAuth(`/api/admin/rbac/audit${query ? `?${query}` : ''}`);
     },
   },
-};
 
+  sync: {
+    getQueue: () => fetchWithAuth('/api/sync/queue'),
+    retry: (taskId) =>
+      fetchWithAuth(`/api/sync/retry/${taskId}`, {
+        method: 'POST',
+      }),
+    resync: () =>
+      fetchWithAuth('/api/sync/resync', {
+        method: 'POST',
+      }),
+  },
+};
 
 export { auth, eventEmitter, EVENTS };
